@@ -28,7 +28,7 @@ public class Train {
 	
 	public static final int MINI_BATCH_SIZE = 256;
 	public static final double LEARNING_RATE = 0.1667;
-	public static final int EPOCHS = 1000;
+	public static final int EPOCHS = 200;
 	
 	/**
 	 * Initializes and trains a neural network using data from the MNIST data 
