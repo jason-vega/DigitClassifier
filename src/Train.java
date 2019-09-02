@@ -1,5 +1,3 @@
-package io.github.jason_vega;
-
 /**
  * A class to train a neural network using MNIST data.
  * 

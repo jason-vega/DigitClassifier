@@ -1,5 +1,3 @@
-package io.github.jason_vega;
-
 /**
  * A helper class of matrix operations for the NeuralNetwork class.
  * 

@@ -1,5 +1,3 @@
-package io.github.jason_vega;
-
 import java.util.Random;
 
 /**
