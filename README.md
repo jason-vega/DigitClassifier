@@ -41,16 +41,14 @@ Recompile and run the program so that the new hyperparameter(s) can come into ef
 Locate the following lines in *Train.java*:
 ```
 public static final int INPUT_LAYER_SIZE = 784;
-public static final int FIRST_HIDDEN_LAYER_SIZE = 70;
-public static final int SECOND_HIDDEN_LAYER_SIZE = 35;
+public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 public static final int OUTPUT_LAYER_SIZE = 10;
 ```
-You can modify or remove these constants as you wish, or even add new constants for additional layers. For example, let's change the number of neurons in the second hidden layer to 40 and add a third hidden layer with 20 neurons:
+You can modify or remove these constants as you wish, or even add new constants for additional layers. For example, let's change the number of neurons in the first hidden layer to 75 and add a second hidden layer with 30 neurons:
 ```
 public static final int INPUT_LAYER_SIZE = 784;
-public static final int FIRST_HIDDEN_LAYER_SIZE = 70;
-public static final int SECOND_HIDDEN_LAYER_SIZE = 40;
-public static final int THIRD_HIDDEN_LAYER_SIZE = 20;
+public static final int FIRST_HIDDEN_LAYER_SIZE = 75;
+public static final int SECOND_HIDDEN_LAYER_SIZE = 30;
 public static final int OUTPUT_LAYER_SIZE = 10;
 ```
 Next, locate the following lines:
@@ -58,7 +56,6 @@ Next, locate the following lines:
 NeuralNetwork n = new NeuralNetwork(new int[]{
   INPUT_LAYER_SIZE,
   FIRST_HIDDEN_LAYER_SIZE,
-  SECOND_HIDDEN_LAYER_SIZE,
   OUTPUT_LAYER_SIZE
 });
 ```
@@ -68,11 +65,10 @@ NeuralNetwork n = new NeuralNetwork(new int[]{
   INPUT_LAYER_SIZE,
   FIRST_HIDDEN_LAYER_SIZE,
   SECOND_HIDDEN_LAYER_SIZE,
-  THIRD_HIDDEN_LAYER_SIZE,
   OUTPUT_LAYER_SIZE
 });
 ```
-We have now added a third hidden layer of 20 neurons, while the second hidden layer's neurons have increased to 40! Recompile and run the program so that the new network structure can come into effect.
+We have now added a second hidden layer of 30 neurons, while the first hidden layer's neurons have decreased to 75! Recompile and run the program so that the new network structure can come into effect.
 ## Limiting the Number of Training/Test Images
 If you wish to test a smaller subset of the MNIST data set, you can limit the size of the subset by locating and modifying the following lines in *Train.java*:
 ```
@@ -92,13 +88,15 @@ public static final int LOAD_IMAGE_VERBOSE = false;
 ```
 Locate the following line:
 ```
-LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH, 
-  IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS);
+LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH,
+  IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS, 
+	NORMALIZE_PIXEL_DATA);
 ```
 and add the new constant variable as the final parameter in the LoadData constructor:
 ```
 LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH, 
-  IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS, LOAD_IMAGE_VERBOSE);
+  IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS,
+  NORMALIZE_PIXEL_DATA, LOAD_IMAGE_VERBOSE);
 ```
 Do the same for testImageLoad if desired. To turn verbose mode on for loading label data or for training, simply locate the following lines in *Train.java*:
 ```
