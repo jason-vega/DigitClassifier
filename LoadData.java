@@ -10,11 +10,13 @@ import java.io.IOException;
  *
  */
 public class LoadData {
-	public static final String START_MESSAGE = "Reading from file...";
-	public static final String PROCESS_BLOCK_MESSAGE = "Processing block ";
-	public static final String DONE_MESSAGE = "Done.\n";
+	public static final String START_MESSAGE = "Reading from file";
+	public static final String PROCESS_BLOCK_MESSAGE = "Processing block";
+	public static final String DONE_MESSAGE = "Done.";
 	
 	public static final boolean DEFAULT_VERBOSE = true;
+	
+	public static final int MAX_BYTE_VALUE = 255;
 	
 	private String filePath;
 	private int fileOffset;
@@ -30,20 +32,21 @@ public class LoadData {
 	 * @param fileOffset The byte to start reading at.
 	 * @param blockLength The length of each block of data.
 	 * @param maxBlocks An upper limit on the number of blocks read.
+	 * @param normalize Whether or not to normalize the data.
 	 * @param verbose Whether or not to output loading progress info.
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public LoadData(String filePath, int fileOffset, int blockLength, 
-			int maxBlocks, boolean verbose) throws IOException, 
-			InterruptedException {
+			int maxBlocks, boolean normalize, boolean verbose) 
+			throws IOException, InterruptedException {
 		this.filePath = filePath;
 		this.fileOffset = fileOffset;
 		this.blockLength = blockLength;
 		this.maxBlocks = maxBlocks;
 		
 		this.data = getDataFromBinary(filePath, fileOffset, blockLength, 
-				maxBlocks, verbose);
+				maxBlocks, normalize, verbose);
 	}
 	
 	/**
@@ -53,12 +56,15 @@ public class LoadData {
 	 * @param fileOffset The byte to start reading at.
 	 * @param blockLength The length of each block of data.
 	 * @param maxBlocks An upper limit on the number of blocks read.
+	 * @param normalize Whether or not to normalize the data.
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public LoadData(String filePath, int fileOffset, int blockLength, 
-			int maxBlocks) throws IOException, InterruptedException {
-		this(filePath, fileOffset, blockLength, maxBlocks, DEFAULT_VERBOSE);
+			int maxBlocks, boolean normalize) throws IOException, 
+			InterruptedException {
+		this(filePath, fileOffset, blockLength, maxBlocks, normalize, 
+			DEFAULT_VERBOSE);
 	}
 	
 	/**
@@ -69,13 +75,14 @@ public class LoadData {
 	 * @param fileOffset The byte to start reading at.
 	 * @param blockLength The length of each block of data.
 	 * @param maxBlocks An upper limit on the number of blocks read.
+	 * @param normalize Whether or not to normalize the data.
 	 * @param verbose Whether or not to output loading progress info.
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public double[][][] getDataFromBinary(String filePath, int fileOffset,
-			int blockLength, int maxBlocks, boolean verbose) 
+			int blockLength, int maxBlocks, boolean normalize, boolean verbose) 
 			throws IOException, InterruptedException {
 		File file = new File(filePath);
 		FileInputStream fileStream = new FileInputStream(file);
@@ -87,31 +94,44 @@ public class LoadData {
 		
 		double data[][][] = new double[dataBlocks][][];
 		
-		System.out.println(START_MESSAGE);
+		System.out.println(START_MESSAGE + " " + file.getName());
 		
 		for (int i = 0; i < dataBlocks; i++) {
 			double[][] block = new double[blockLength][];
 			
 			if (verbose) {
-				System.out.println(PROCESS_BLOCK_MESSAGE + (i + 1) + "/" + 
+				System.out.println(PROCESS_BLOCK_MESSAGE + " " + (i + 1) + "/" + 
 					dataBlocks);
 			}
 			
 			for (int j = 0; j < blockLength; j++) {
 				double[] row = new double[1];
 				
-				row[0] = fileStream.read();
+				row[0] = (normalize ? 
+					normalize(fileStream.read(), MAX_BYTE_VALUE) : 
+					fileStream.read());
 				block[j] = row;
 			}
 			
 			data[i] = block;
 		}
 		
-		System.out.println(DONE_MESSAGE);
+		System.out.println(DONE_MESSAGE + "\n");
 		
 		fileStream.close();
 		
 		return data;
+	}
+	
+	/**
+	 * Normalizes the given value.
+	 * 
+	 * @param value The value to normalize.
+	 * @param maxValue The maximum value on the new scale.
+	 * @return The normalized value.
+	 */
+	public static double normalize(int value, int maxValue) {
+		return (double) value / maxValue;
 	}
 	
 	/**

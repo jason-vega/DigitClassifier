@@ -6,8 +6,7 @@
  */
 public class Train {
 	public static final int INPUT_LAYER_SIZE = 784;
-	public static final int FIRST_HIDDEN_LAYER_SIZE = 70;
-	public static final int SECOND_HIDDEN_LAYER_SIZE = 35;
+	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
 	public static final String TRAINING_IMAGE_FILE_PATH = "";
@@ -26,9 +25,12 @@ public class Train {
 	
 	public static final int INPUT_DATA_COMPONENTS = 2;
 	
-	public static final int MINI_BATCH_SIZE = 256;
-	public static final double LEARNING_RATE = 0.1667;
-	public static final int EPOCHS = 200;
+	public static final int MINI_BATCH_SIZE = 10;
+	public static final double LEARNING_RATE = 0.5;
+	public static final int EPOCHS = 30;
+	
+	public static final boolean NORMALIZE_PIXEL_DATA = true;
+	public static final boolean NORMALIZE_LABEL_DATA = false;
 	
 	/**
 	 * Initializes and trains a neural network using data from the MNIST data 
@@ -41,54 +43,57 @@ public class Train {
 		NeuralNetwork n = new NeuralNetwork(new int[]{
 				INPUT_LAYER_SIZE,
 				FIRST_HIDDEN_LAYER_SIZE,
-				SECOND_HIDDEN_LAYER_SIZE,
 				OUTPUT_LAYER_SIZE
 		});
 		
 		LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH, 
-				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS);
+				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS, 
+				NORMALIZE_PIXEL_DATA);
 		LoadData trainLabelLoad = new LoadData(TRAINING_LABEL_FILE_PATH, 
-				LABEL_FILE_OFFSET, 1, MAX_TRAINING_INPUTS, LOAD_LABEL_VERBOSE);
+				LABEL_FILE_OFFSET, 1, MAX_TRAINING_INPUTS, LOAD_LABEL_VERBOSE,
+				NORMALIZE_LABEL_DATA);
 		LoadData testImageLoad = new LoadData(TEST_IMAGE_FILE_PATH, 
-				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TEST_INPUTS);
+				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TEST_INPUTS,
+				NORMALIZE_PIXEL_DATA);
 		LoadData testLabelLoad = new LoadData(TEST_IMAGE_LABEL_PATH, 
-				LABEL_FILE_OFFSET, 1, MAX_TEST_INPUTS, LOAD_LABEL_VERBOSE);
+				LABEL_FILE_OFFSET, 1, MAX_TEST_INPUTS, LOAD_LABEL_VERBOSE,
+				NORMALIZE_LABEL_DATA);
 		
 		double[][][] trainImages = trainImageLoad.getData();
 		double[][][] trainLabels = trainLabelLoad.getData();
-		double[][][][] trainData = new double[trainImages.length][][][];
+		double[][][][] trainData = zip(trainImages, trainLabels);
 		
 		double[][][] testImages = testImageLoad.getData();
 		double[][][] testLabels = testLabelLoad.getData();
-		double[][][][] testData = new double[testImages.length][][][];
+		double[][][][] testData = zip(testImages, testLabels);
 		
-		// Zip training images and corresponding labels
-		for(int i = 0; i < trainImages.length; i++) {
-			double[][] trainImage = trainImages[i];
-			double[][] trainLabel =
-					Matrix.vectorize(1, (int) trainLabels[i][0][0], 
-							OUTPUT_LAYER_SIZE);
-			double[][][] data = new double[INPUT_DATA_COMPONENTS][][];
-			data[0] = trainImage;
-			data[1] = trainLabel;
-			
-			trainData[i] = data;
-		}
+		n.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
+		TRAIN_VERBOSE);
+	}
+	
+	/**
+	 * Combines image and label data into one array.
+	 * 
+	 * @param images Image data.
+	 * @param labels Label data.
+	 * @return The array containing the combined data.
+	 */
+	public static double[][][][] zip(double[][][] images, 
+		double[][][] labels) {
+		double[][][][] combined = new double[images.length][][][];
 		
-		// Zip test images and corresponding labels
-		for(int i = 0; i < testImages.length; i++) {
-			double[][] testImage = testImages[i];
+		for(int i = 0; i < images.length; i++) {
+			double[][] testImage = images[i];
 			double[][] testLabel = 
-					Matrix.vectorize(1, (int) testLabels[i][0][0], 
+					Matrix.vectorize(1, (int) labels[i][0][0], 
 							OUTPUT_LAYER_SIZE);
 			double[][][] data = new double[INPUT_DATA_COMPONENTS][][];
 			data[0] = testImage;
 			data[1] = testLabel;
 			
-			testData[i] = data;
+			combined[i] = data;
 		}
 		
-		n.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
-				TRAIN_VERBOSE);
+		return combined;
 	}
 }

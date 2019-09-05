@@ -306,8 +306,6 @@ public class NeuralNetwork {
 		layerFromEnd++;
 		
 		for (; layerFromEnd <= layerInputs.length; layerFromEnd++) {
-			currentLayerActivation = 
-				activations[activations.length - layerFromEnd];
 			previousLayerActivation = 
 				activations[activations.length - layerFromEnd - 1];
 			currentLayerInput = 
