@@ -1,9 +1,9 @@
 # Digit Classifier
-A multi-layer Java neural network featuring the stochastic gradient descent algorithm to recognize digits in the MNIST data set. The default neural network in *Train.java* has the following hyperparameters, which can be altered (as shown in the sections below):
-* Layers: 784-70-35-10
-* Mini-batch size: 256
-* Learning rate: 0.1667
-* Epochs: 200
+A scalable Java neural network featuring the stochastic gradient descent algorithm to recognize digits in the MNIST data set. The default neural network in *Train.java* has the following hyperparameters, which can be altered (as shown in the sections below):
+* Layers: 784-100-10
+* Mini-batch size: 10
+* Learning rate: 0.5
+* Epochs: 30
 * Cost function: Cross-Entropy
 * Activation function: Sigmoid
 
