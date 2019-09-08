@@ -7,7 +7,7 @@ A scalable Java neural network featuring the stochastic gradient descent algorit
 * Cost function: Cross-Entropy
 * Activation function: Sigmoid
 
-The default neural network yielded a maximum test accuracy rate of 93.15% on the 192nd epoch when trained and tested on the entire MNIST data set.
+The default neural network yielded a maximum test accuracy rate of 97.06% on the 27th epoch when trained and tested on the entire MNIST data set.
 ## Prerequisites
 You will need to download the MNIST data set from [Yann LeCun's website](http://yann.lecun.com/exdb/mnist/index.html). Download all four files and save them into a directory of your choice.
 ## Installation
@@ -88,7 +88,7 @@ public static final boolean LOAD_IMAGE_VERBOSE = true;
 public static final boolean LOAD_LABEL_VERBOSE = true;
 public static final boolean TRAIN_VERBOSE = true;
 ```
-and set the desired variables to false. Lastly, for all changes to verbose mode configuration, recompile and run the program so that the changes can take effect.
+and set the desired variables to false. Recompile and run the program so that the changes can take effect.
 ## Changing the cost function
 There is no explicit cost function defined in *NeuralNetwork.java*. That's because backpropogation only concerns itself with the *derivative* of the cost function! Specifically, we define a method that represents the cost derivative with respect to the activation function called costDerivativeWithRespectToActivation(). By default, the assumed cost function is the cross-entropy function. To implement a different cost function, find an expression for the cost derivative with respect to the activation function and implement this in the aforementioned method.
 ## Changing the activation function
