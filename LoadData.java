@@ -124,7 +124,7 @@ public class LoadData {
 	 * Deletes the current progress bar.
 	 * @param currentProgressBar The current progress bar.
 	 */
-	public void deleteProgressBar(String currentProgressBar) {
+	public static void deleteProgressBar(String currentProgressBar) {
 		String line = "";
 		
 		for (int i = 0; i < currentProgressBar.length(); i++) {
@@ -142,13 +142,13 @@ public class LoadData {
 	 * @param total The total amount of iterations.
 	 * @return the progress bar.
 	 */
-	public String getProgressBar(String message, int current, int total, 
+	public static String getProgressBar(String message, int current, int total, 
 			String unit) {
 		String line = message + " [";
 		String endLine = "] (" + unit + " " + current + "/" + total + ")";
 		double progress = (double) current / total;
 		int progressBarSize = MAX_LINE_WIDTH - line.length() - 
-			endLine.length();
+			endLine.length() - 1;
 		int currentBarSize = (int) Math.floor(progress * progressBarSize);
 		
 		for (int i = 0; i < progressBarSize; i++) {

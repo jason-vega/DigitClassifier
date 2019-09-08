@@ -11,8 +11,23 @@ public class NeuralNetwork {
 	public static final int PERCENTAGE_RATIO = 100;
 	public static final long NANOSECOND_RATIO = 1000000000;
 	public static final String EPOCH_MESSAGE = "EPOCH";
-	public static final String ACCURACY_MESSAGE = "ACCURACY: ";
-	public static final String TIME_ELAPSED_MESSAGE = "TIME ELAPSED: ";
+	public static final String ACCURACY_MESSAGE = "Accuracy:";
+	public static final String TIME_ELAPSED_MESSAGE = "Time elapsed:";
+	public static final String MINI_BATCH_UNIT = "mini-batch";
+	public static final String TEST_IMAGE_UNIT = "test image";
+	public static final String TRAIN_IMAGE_UNIT = "training image";
+	public static final String TRAINING_PROGRESS_MESSAGE = 
+		"Training progress:";
+	public static final String TESTING_PROGRESS_MESSAGE = 
+		"Testing progress:";
+	public static final String TRAINING_START_MESSAGE = 
+			"s (since training start), ";
+	public static final String EPOCH_START_MESSAGE = 
+			"s (since epoch start), ";
+	public static final String TRAIN_ACCURACY_MESSAGE = 
+			"% (training), ";
+	public static final String TEST_ACCURACY_MESSAGE = 
+			"% (test), ";
 	
 	private int[] layers;
 	private int numberOfLayers;
@@ -61,6 +76,7 @@ public class NeuralNetwork {
 			double[][][][][] miniBatches = this.getMiniBatches(trainingData, 
 					miniBatchSize);
 			long initialTimeEpoch = System.nanoTime();
+			String currentProgressBar = "";
 			
 			System.out.println("-- " + EPOCH_MESSAGE + " " + i + "/" + epochs + 
 				" --");
@@ -73,8 +89,19 @@ public class NeuralNetwork {
 				double[][][] gradientSumWithRespectToBiases = gradientSum[1];
 				
 				if (verbose) {
-					System.out.println("Processing mini-batch " + (j + 1) + "/" + 
-							miniBatches.length);
+					if (j > 0) {
+						LoadData.deleteProgressBar(currentProgressBar);
+					}
+					
+					currentProgressBar = 
+						LoadData.getProgressBar(TRAINING_PROGRESS_MESSAGE, j + 1, 
+								miniBatches.length, MINI_BATCH_UNIT);
+					
+					System.out.print(currentProgressBar);
+					
+					if (j == miniBatches.length - 1) {
+						System.out.print('\n');
+					}
 				}
 				
 				for (int k = 0; k < numberOfLayers - 1; k++) {
@@ -95,12 +122,15 @@ public class NeuralNetwork {
 			long elapsedTimeStart = System.nanoTime() - initialTimeStart;
 			long elapsedTimeEpoch = System.nanoTime() - initialTimeEpoch;
 			
-			System.out.println(ACCURACY_MESSAGE + this.getAccuracy(testData) + 
-				"% (test), " + this.getAccuracy(trainingData) +
-				"% (training)");
-			System.out.println(TIME_ELAPSED_MESSAGE + 
-				elapsedTimeStart / NANOSECOND_RATIO + "s (since start), " +
-				elapsedTimeEpoch / NANOSECOND_RATIO + "s (since prev. epoch)\n");
+			System.out.println(ACCURACY_MESSAGE + " " + 
+					this.getAccuracy(testData, TEST_IMAGE_UNIT, verbose) + 
+					TEST_ACCURACY_MESSAGE + 
+					this.getAccuracy(trainingData, TRAIN_IMAGE_UNIT, verbose) + 
+					TRAIN_ACCURACY_MESSAGE);
+			System.out.println(TIME_ELAPSED_MESSAGE + " " + 
+				elapsedTimeStart / NANOSECOND_RATIO + TRAINING_START_MESSAGE +
+				elapsedTimeEpoch / NANOSECOND_RATIO + EPOCH_START_MESSAGE +
+				'\n');
 		}
 	}
 	
@@ -108,13 +138,18 @@ public class NeuralNetwork {
 	 * Calculates and returns the accuracy (%) of this neural network.
 	 * 
 	 * @param dataSet The data to test for accuracy.
+	 * @param unit The unit of data for the data set.
+	 * @param verboes Whether or not to test in verbose mode.
 	 * @return The accuracy rate as a percentage.
 	 * @throws Exception 
 	 */
-	public double getAccuracy(double[][][][] dataSet) throws Exception {
+	public double getAccuracy(double[][][][] dataSet, String unit, 
+			boolean verbose) throws Exception {
 		int correct = 0;
+		String currentProgressBar = "";
 		
-		for (double data[][][] : dataSet) {
+		for (int i = 0; i < dataSet.length; i++) {
+			double data[][][] = dataSet[i];
 			double[][] input = data[0];
 			double[][] label = data[1];
 			double[][] output = forwardPass(input);
@@ -122,6 +157,22 @@ public class NeuralNetwork {
 			
 			if (label[resultIndex][0] == 1) {
 				correct++;
+			}
+			
+			if (verbose) {
+				if (i > 0) {
+					LoadData.deleteProgressBar(currentProgressBar);
+				}
+				
+				currentProgressBar = 
+					LoadData.getProgressBar(TESTING_PROGRESS_MESSAGE, i + 1, 
+							dataSet.length, unit);
+				
+				System.out.print(currentProgressBar);
+				
+				if (i == dataSet.length - 1) {
+					System.out.print('\n');
+				}
 			}
 		}
 		
