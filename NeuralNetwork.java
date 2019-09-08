@@ -23,9 +23,9 @@ public class NeuralNetwork {
 	public static final String TRAINING_START_MESSAGE = 
 			"s (since training start), ";
 	public static final String EPOCH_START_MESSAGE = 
-			"s (since epoch start), ";
+			"s (since epoch start)";
 	public static final String TRAIN_ACCURACY_MESSAGE = 
-			"% (training), ";
+			"% (training)";
 	public static final String TEST_ACCURACY_MESSAGE = 
 			"% (test), ";
 	
