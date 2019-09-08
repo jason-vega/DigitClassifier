@@ -9,7 +9,10 @@ A scalable Java neural network featuring the stochastic gradient descent algorit
 
 The default neural network yielded a maximum test accuracy rate of 97.06% on the 27th epoch when trained and tested on the entire MNIST data set.
 ## Prerequisites
-You will need to download the MNIST data set from [Yann LeCun's website](http://yann.lecun.com/exdb/mnist/index.html). Download all four files and save them into a directory of your choice.
+You will need to download the MNIST data set from [Yann LeCun's website](http://yann.lecun.com/exdb/mnist/index.html). Download all four files and save them into a directory of your choice. Next, you will need to uncompress each of these files. You can do this using the gzip command:
+```
+gzip -d <files>
+```
 ## Installation
 Clone or download the project from GitHub. In *Train.java*, locate the following lines:
 ```
@@ -18,7 +21,7 @@ public static final String TRAINING_LABEL_FILE_PATH = "";
 public static final String TEST_IMAGE_FILE_PATH = "";
 public static final String TEST_IMAGE_LABEL_PATH = "";
 ```
-Copy the absolute path of each MNIST data set files into their appropriate string. Lastly, compile the Java program.
+Copy the absolute path of each MNIST data set files into their appropriate string. Lastly, navigate to the project folder and compile the Java program.
 ```
 javac *.java
 ```
