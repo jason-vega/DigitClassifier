@@ -9,6 +9,10 @@ import java.util.Random;
 public class NeuralNetwork {
 	public static final int COST_GRADIENT_COMPONENTS = 2;
 	public static final int PERCENTAGE_RATIO = 100;
+	public static final long NANOSECOND_RATIO = 1000000000;
+	public static final String EPOCH_MESSAGE = "EPOCH";
+	public static final String ACCURACY_MESSAGE = "ACCURACY: ";
+	public static final String TIME_ELAPSED_MESSAGE = "TIME ELAPSED: ";
 	
 	private int[] layers;
 	private int numberOfLayers;
@@ -51,11 +55,15 @@ public class NeuralNetwork {
 		double biases[][][] = this.getBiases();
 		int numberOfLayers = this.getNumberOfLayers();
 		
+		long initialTimeStart = System.nanoTime();
+		
 		for (int i = 1; i <= epochs; i++) {
 			double[][][][][] miniBatches = this.getMiniBatches(trainingData, 
 					miniBatchSize);
+			long initialTimeEpoch = System.nanoTime();
 			
-			System.out.println("-- EPOCH " + i + "/" + epochs + " --");
+			System.out.println("-- " + EPOCH_MESSAGE + " " + i + "/" + epochs + 
+				" --");
 			
 			for (int j = 0; j < miniBatches.length; j++) {
 				double[][][][] miniBatch = miniBatches[j];
@@ -84,10 +92,15 @@ public class NeuralNetwork {
 				}
 			}
 			
-			System.out.println("TRAINING ACCURACY: " + 
-					this.getAccuracy(trainingData) + "%");
-			System.out.println("TEST ACCURACY: " + this.getAccuracy(testData) + 
-				"%\n");
+			long elapsedTimeStart = System.nanoTime() - initialTimeStart;
+			long elapsedTimeEpoch = System.nanoTime() - initialTimeEpoch;
+			
+			System.out.println(ACCURACY_MESSAGE + this.getAccuracy(testData) + 
+				"% (test), " + this.getAccuracy(trainingData) +
+				"% (training)");
+			System.out.println(TIME_ELAPSED_MESSAGE + 
+				elapsedTimeStart / NANOSECOND_RATIO + "s (since start), " +
+				elapsedTimeEpoch / NANOSECOND_RATIO + "s (since prev. epoch)\n");
 		}
 	}
 	
