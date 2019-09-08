@@ -9,10 +9,10 @@ public class Train {
 	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
-	public static final String TRAINING_IMAGE_FILE_PATH = "";
-	public static final String TRAINING_LABEL_FILE_PATH = "";
-	public static final String TEST_IMAGE_FILE_PATH = "";
-	public static final String TEST_IMAGE_LABEL_PATH = "";
+	public static final String TRAINING_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-images-idx3-ubyte";
+	public static final String TRAINING_LABEL_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-labels-idx1-ubyte";
+	public static final String TEST_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-images-idx3-ubyte";
+	public static final String TEST_IMAGE_LABEL_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-labels-idx1-ubyte";
 	
 	public static final int IMAGE_FILE_OFFSET = 16;
 	public static final int LABEL_FILE_OFFSET = 8;
@@ -20,7 +20,8 @@ public class Train {
 	public static final int MAX_TRAINING_INPUTS = 60000;
 	public static final int MAX_TEST_INPUTS = 10000;
 	
-	public static final boolean LOAD_LABEL_VERBOSE = false;
+	public static final boolean LOAD_IMAGE_VERBOSE = true;
+	public static final boolean LOAD_LABEL_VERBOSE = true;
 	public static final boolean TRAIN_VERBOSE = false;
 	
 	public static final int INPUT_DATA_COMPONENTS = 2;
@@ -32,6 +33,14 @@ public class Train {
 	public static final boolean NORMALIZE_PIXEL_DATA = true;
 	public static final boolean NORMALIZE_LABEL_DATA = false;
 	
+	public static final String IMAGE_UNIT = "image";
+	public static final String LABEL_UNIT = "label";
+	
+	public static final String START_MESSAGE = "MNIST Digit Classifier by Jason"
+			+ " Vega";
+	public static final String SEPARATOR = 
+			"------------------------------------";
+	
 	/**
 	 * Initializes and trains a neural network using data from the MNIST data 
 	 * set.
@@ -40,6 +49,9 @@ public class Train {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
+		System.out.println(START_MESSAGE + '\n');
+		System.out.println(SEPARATOR + '\n');
+		
 		NeuralNetwork n = new NeuralNetwork(new int[]{
 				INPUT_LAYER_SIZE,
 				FIRST_HIDDEN_LAYER_SIZE,
@@ -48,16 +60,18 @@ public class Train {
 		
 		LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH, 
 				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS, 
-				NORMALIZE_PIXEL_DATA);
+				IMAGE_UNIT, NORMALIZE_PIXEL_DATA, LOAD_IMAGE_VERBOSE);
 		LoadData trainLabelLoad = new LoadData(TRAINING_LABEL_FILE_PATH, 
-				LABEL_FILE_OFFSET, 1, MAX_TRAINING_INPUTS, NORMALIZE_LABEL_DATA,
-				LOAD_LABEL_VERBOSE);
+				LABEL_FILE_OFFSET, 1, MAX_TRAINING_INPUTS, LABEL_UNIT, 
+				NORMALIZE_LABEL_DATA, LOAD_LABEL_VERBOSE);
 		LoadData testImageLoad = new LoadData(TEST_IMAGE_FILE_PATH, 
 				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TEST_INPUTS,
-				NORMALIZE_PIXEL_DATA);
+				IMAGE_UNIT, NORMALIZE_PIXEL_DATA, LOAD_IMAGE_VERBOSE);
 		LoadData testLabelLoad = new LoadData(TEST_IMAGE_LABEL_PATH, 
-				LABEL_FILE_OFFSET, 1, MAX_TEST_INPUTS, NORMALIZE_LABEL_DATA,
-				LOAD_LABEL_VERBOSE);
+				LABEL_FILE_OFFSET, 1, MAX_TEST_INPUTS, LABEL_UNIT,
+				NORMALIZE_LABEL_DATA, LOAD_LABEL_VERBOSE);
+		
+		System.out.println(SEPARATOR + '\n');
 		
 		double[][][] trainImages = trainImageLoad.getData();
 		double[][][] trainLabels = trainLabelLoad.getData();

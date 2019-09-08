@@ -11,17 +11,18 @@ import java.io.IOException;
  */
 public class LoadData {
 	public static final String START_MESSAGE = "Reading from file";
-	public static final String PROCESS_BLOCK_MESSAGE = "Processing block";
+	public static final String PROGRESS_MESSAGE = "Progress:";
 	public static final String DONE_MESSAGE = "Done.";
-	
-	public static final boolean DEFAULT_VERBOSE = true;
-	
+	public static final char PROGRESS_BLOCK = '#';
+	public static final char EMPTY_PROGRESS_BLOCK = ' ';
+	public static final int MAX_LINE_WIDTH = 80;
 	public static final int MAX_BYTE_VALUE = 255;
 	
 	private String filePath;
 	private int fileOffset;
 	private int blockLength;
 	private int maxBlocks;
+	private String unit;
 	
 	private double[][][] data;
 	
@@ -32,13 +33,14 @@ public class LoadData {
 	 * @param fileOffset The byte to start reading at.
 	 * @param blockLength The length of each block of data.
 	 * @param maxBlocks An upper limit on the number of blocks read.
+	 * @param unit the The unit of data.
 	 * @param normalize Whether or not to normalize the data.
 	 * @param verbose Whether or not to output loading progress info.
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public LoadData(String filePath, int fileOffset, int blockLength, 
-			int maxBlocks, boolean normalize, boolean verbose) 
+			int maxBlocks, String unit, boolean normalize, boolean verbose) 
 			throws IOException, InterruptedException {
 		this.filePath = filePath;
 		this.fileOffset = fileOffset;
@@ -46,25 +48,7 @@ public class LoadData {
 		this.maxBlocks = maxBlocks;
 		
 		this.data = getDataFromBinary(filePath, fileOffset, blockLength, 
-				maxBlocks, normalize, verbose);
-	}
-	
-	/**
-	 * Loads binary data from file with the default verbose setting.
-	 * 
-	 * @param filePath The path to the data file.
-	 * @param fileOffset The byte to start reading at.
-	 * @param blockLength The length of each block of data.
-	 * @param maxBlocks An upper limit on the number of blocks read.
-	 * @param normalize Whether or not to normalize the data.
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public LoadData(String filePath, int fileOffset, int blockLength, 
-			int maxBlocks, boolean normalize) throws IOException, 
-			InterruptedException {
-		this(filePath, fileOffset, blockLength, maxBlocks, normalize, 
-			DEFAULT_VERBOSE);
+				maxBlocks, unit, normalize, verbose);
 	}
 	
 	/**
@@ -75,33 +59,46 @@ public class LoadData {
 	 * @param fileOffset The byte to start reading at.
 	 * @param blockLength The length of each block of data.
 	 * @param maxBlocks An upper limit on the number of blocks read.
+	 * @param unit The unit of data.
 	 * @param normalize Whether or not to normalize the data.
 	 * @param verbose Whether or not to output loading progress info.
-	 * @return
+	 * @return The array containing the file data.
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
 	public double[][][] getDataFromBinary(String filePath, int fileOffset,
-			int blockLength, int maxBlocks, boolean normalize, boolean verbose) 
+			int blockLength, int maxBlocks, String unit, boolean normalize, 
+			boolean verbose) 
 			throws IOException, InterruptedException {
 		File file = new File(filePath);
 		FileInputStream fileStream = new FileInputStream(file);
 		int dataBlocks = Math.min(
 			this.getDataBlocks(file, fileOffset, blockLength),
 			maxBlocks);
+		double data[][][] = new double[dataBlocks][][];
+		String currentProgressBar = "";
 		
 		fileStream.skip(fileOffset);
 		
-		double data[][][] = new double[dataBlocks][][];
-		
-		System.out.println(START_MESSAGE + " " + file.getName());
+		System.out.println(START_MESSAGE + " " + file.getName() + "...");
 		
 		for (int i = 0; i < dataBlocks; i++) {
 			double[][] block = new double[blockLength][];
 			
 			if (verbose) {
-				System.out.println(PROCESS_BLOCK_MESSAGE + " " + (i + 1) + "/" + 
-					dataBlocks);
+				if (i > 0) {
+					deleteProgressBar(currentProgressBar);
+				}
+				
+				currentProgressBar = 
+					getProgressBar(PROGRESS_MESSAGE, i + 1, dataBlocks,
+						unit);
+				
+				System.out.print(currentProgressBar);
+				
+				if (i == dataBlocks - 1) {
+					System.out.print('\n');
+				}
 			}
 			
 			for (int j = 0; j < blockLength; j++) {
@@ -121,6 +118,51 @@ public class LoadData {
 		fileStream.close();
 		
 		return data;
+	}
+	
+	/**
+	 * Deletes the current progress bar.
+	 * @param currentProgressBar The current progress bar.
+	 */
+	public void deleteProgressBar(String currentProgressBar) {
+		String line = "";
+		
+		for (int i = 0; i < currentProgressBar.length(); i++) {
+			line += '\b';
+		}
+		
+		System.out.print(line);
+	}
+	
+	/**
+	 * Returns a string representation of a progress bar. 
+	 * 
+	 * @param message The message to display before the progress bar.
+	 * @param current The current iteration.
+	 * @param total The total amount of iterations.
+	 * @return the progress bar.
+	 */
+	public String getProgressBar(String message, int current, int total, 
+			String unit) {
+		String line = message + " [";
+		String endLine = "] (" + unit + " " + current + "/" + total + ")";
+		double progress = (double) current / total;
+		int progressBarSize = MAX_LINE_WIDTH - line.length() - 
+			endLine.length();
+		int currentBarSize = (int) Math.floor(progress * progressBarSize);
+		
+		for (int i = 0; i < progressBarSize; i++) {
+			if (i + 1 <= currentBarSize) {
+				line += PROGRESS_BLOCK;
+			}
+			else {
+				line += EMPTY_PROGRESS_BLOCK;
+			}
+		}
+		
+		line += endLine;
+		
+		return line;
 	}
 	
 	/**
@@ -189,5 +231,14 @@ public class LoadData {
 	 */
 	public double[][][] getData() {
 		return this.data;
+	}
+	
+	/**
+	 * Returns the unit of data.
+	 * 
+	 * @return the unit of data.
+	 */
+	public String getUnit() {
+		return this.unit;
 	}
 }
