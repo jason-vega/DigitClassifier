@@ -82,13 +82,14 @@ public static final int MAX_TEST_INPUTS = 5000;
 ```
 Recompile and run the program to load the subset of MNIST data.
 ## Output Data Loading and Training Progress
-Sometimes the amount of data you wish to process can make it seem like your program is indefinitely stuck. This is especially true when loading the entire MNIST training and test image sets, or training with multiple dense layers. In such cases, you may wish to output current progress info - the current block being processed for data loading, and the current mini-batch being evaluated for training - i.e. we wish to set verbose mode to *true*. Verbose mode is on by default by for loading image data, loading label data and for training. To turn off verbose mode for loading image and/or label data, locate the following lines:
+Sometimes the amount of data you wish to process can make it seem like your program is indefinitely stuck. This is especially true when loading the entire MNIST training and test image sets, or training with multiple dense layers. In such cases, you may wish to output current progress info - the current block being processed for data loading, and the current mini-batch being evaluated for training - i.e. we wish to set verbose mode to *true*. Verbose mode is on by default for loading image data and training, and off by default for loading label data and testing. To toggle verbose mode for any of these actions, locate the following lines:
 ```
 public static final boolean LOAD_IMAGE_VERBOSE = true;
-public static final boolean LOAD_LABEL_VERBOSE = true;
+public static final boolean LOAD_LABEL_VERBOSE = false;
 public static final boolean TRAIN_VERBOSE = true;
+public static final boolean TEST_VERBOSE = false;
 ```
-and set the desired variables to false. Recompile and run the program so that the changes can take effect.
+and set the desired variable(s) to true (on) or false (off). Recompile and run the program so that the changes can take effect.
 ## Changing the cost function
 There is no explicit cost function defined in *NeuralNetwork.java*. That's because backpropogation only concerns itself with the *derivative* of the cost function! Specifically, we define a method that represents the cost derivative with respect to the activation function called costDerivativeWithRespectToActivation(). By default, the assumed cost function is the cross-entropy function. To implement a different cost function, find an expression for the cost derivative with respect to the activation function and implement this in the aforementioned method.
 ## Changing the activation function

@@ -21,8 +21,9 @@ public class Train {
 	public static final int MAX_TEST_INPUTS = 10000;
 	
 	public static final boolean LOAD_IMAGE_VERBOSE = true;
-	public static final boolean LOAD_LABEL_VERBOSE = true;
+	public static final boolean LOAD_LABEL_VERBOSE = false;
 	public static final boolean TRAIN_VERBOSE = true;
+	public static final boolean TEST_VERBOSE = false;
 	
 	public static final int INPUT_DATA_COMPONENTS = 2;
 	
@@ -82,7 +83,7 @@ public class Train {
 		double[][][][] testData = zip(testImages, testLabels);
 		
 		n.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
-		TRAIN_VERBOSE);
+		TRAIN_VERBOSE, TEST_VERBOSE);
 	}
 	
 	/**

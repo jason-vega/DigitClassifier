@@ -59,12 +59,14 @@ public class NeuralNetwork {
 	 * @param epochs The number of training sessions.
 	 * @param testData The test data, including the input and corresponding
 	 * labels.
-	 * @param verbose Whether or not to output processing data.
+	 * @param trainVerbose Whether or not to output training processing 
+         * data.
+	 * @param testVerbose Whether or not to output test processing data.
 	 * @throws Exception 
 	 */
 	public void train(double[][][][] trainingData, int miniBatchSize, 
 			double learningRate, int epochs, double[][][][] testData, 
-			boolean verbose) 
+			boolean trainVerbose, boolean testVerbose) 
 					throws Exception {
 		double weights[][][] = this.getWeights();
 		double biases[][][] = this.getBiases();
@@ -88,7 +90,7 @@ public class NeuralNetwork {
 				double[][][] gradientSumWithRespectToWeights = gradientSum[0];
 				double[][][] gradientSumWithRespectToBiases = gradientSum[1];
 				
-				if (verbose) {
+				if (trainVerbose) {
 					if (j > 0) {
 						LoadData.deleteProgressBar(currentProgressBar);
 					}
@@ -123,9 +125,9 @@ public class NeuralNetwork {
 			long elapsedTimeEpoch = System.nanoTime() - initialTimeEpoch;
 			
 			System.out.println(ACCURACY_MESSAGE + " " + 
-					this.getAccuracy(testData, TEST_IMAGE_UNIT, verbose) + 
+					this.getAccuracy(testData, TEST_IMAGE_UNIT, testVerbose) + 
 					TEST_ACCURACY_MESSAGE + 
-					this.getAccuracy(trainingData, TRAIN_IMAGE_UNIT, verbose) + 
+					this.getAccuracy(trainingData, TRAIN_IMAGE_UNIT, testVerbose) + 
 					TRAIN_ACCURACY_MESSAGE);
 			System.out.println(TIME_ELAPSED_MESSAGE + " " + 
 				elapsedTimeStart / NANOSECOND_RATIO + TRAINING_START_MESSAGE +
