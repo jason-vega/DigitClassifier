@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -71,7 +72,8 @@ public class LoadData {
 			boolean verbose) 
 			throws IOException, InterruptedException {
 		File file = new File(filePath);
-		FileInputStream fileStream = new FileInputStream(file);
+		BufferedInputStream fileStream = 
+			new BufferedInputStream(new FileInputStream(file));
 		int dataBlocks = Math.min(
 			this.getDataBlocks(file, fileOffset, blockLength),
 			maxBlocks);

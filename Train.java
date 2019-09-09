@@ -9,10 +9,10 @@ public class Train {
 	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
-	public static final String TRAINING_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-images-idx3-ubyte";
-	public static final String TRAINING_LABEL_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-labels-idx1-ubyte";
-	public static final String TEST_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-images-idx3-ubyte";
-	public static final String TEST_IMAGE_LABEL_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-labels-idx1-ubyte";
+	public static final String TRAINING_IMAGE_FILE_PATH = "";
+	public static final String TRAINING_LABEL_FILE_PATH = "";
+	public static final String TEST_IMAGE_FILE_PATH = "";
+	public static final String TEST_IMAGE_LABEL_PATH = "";
 	
 	public static final int IMAGE_FILE_OFFSET = 16;
 	public static final int LABEL_FILE_OFFSET = 8;
@@ -20,7 +20,7 @@ public class Train {
 	public static final int MAX_TRAINING_INPUTS = 60000;
 	public static final int MAX_TEST_INPUTS = 10000;
 	
-	public static final boolean LOAD_IMAGE_VERBOSE = true;
+	public static final boolean LOAD_IMAGE_VERBOSE = false;
 	public static final boolean LOAD_LABEL_VERBOSE = false;
 	public static final boolean TRAIN_VERBOSE = true;
 	public static final boolean TEST_VERBOSE = false;
