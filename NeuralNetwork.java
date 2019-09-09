@@ -11,23 +11,24 @@ public class NeuralNetwork {
 	public static final int PERCENTAGE_RATIO = 100;
 	public static final long NANOSECOND_RATIO = 1000000000;
 	public static final String EPOCH_MESSAGE = "EPOCH";
-	public static final String ACCURACY_MESSAGE = "Accuracy:";
-	public static final String TIME_ELAPSED_MESSAGE = "Time elapsed:";
+	public static final String ACCURACY_MESSAGE = "ACCURACY:";
+	public static final String TIME_ELAPSED_MESSAGE = "TIME ELAPSED:";
 	public static final String MINI_BATCH_UNIT = "mini-batch";
 	public static final String TEST_IMAGE_UNIT = "test image";
 	public static final String TRAIN_IMAGE_UNIT = "training image";
+	public static final String TRAINING_MESSAGE = "Training...";
+	public static final String TESTING_MESSAGE = "Testing...";
 	public static final String TRAINING_PROGRESS_MESSAGE = 
 		"Training progress:";
 	public static final String TESTING_PROGRESS_MESSAGE = 
 		"Testing progress:";
-	public static final String TRAINING_START_MESSAGE = 
+	public static final String TRAIN_START_MESSAGE = 
 			"s (since training start), ";
 	public static final String EPOCH_START_MESSAGE = 
 			"s (since epoch start)";
-	public static final String TRAIN_ACCURACY_MESSAGE = 
-			"% (training)";
-	public static final String TEST_ACCURACY_MESSAGE = 
-			"% (test), ";
+	public static final String ACCURACY_UNIT = "%";
+	public static final String TEST_ACCURACY_TITLE = "(test)";
+	public static final String TRAIN_ACCURACY_TITLE = "(training)";
 	
 	private int[] layers;
 	private int numberOfLayers;
@@ -61,12 +62,17 @@ public class NeuralNetwork {
 	 * labels.
 	 * @param trainVerbose Whether or not to output training processing 
          * data.
+	 * @param getTestAccuracy Whether or not to get the accuracy on the test 
+	 * set.
+	 * @param getTrainingAccuracy Whether or not to get the accuracy on the  
+	 * training set.
 	 * @param testVerbose Whether or not to output test processing data.
 	 * @throws Exception 
 	 */
 	public void train(double[][][][] trainingData, int miniBatchSize, 
 			double learningRate, int epochs, double[][][][] testData, 
-			boolean trainVerbose, boolean testVerbose) 
+			boolean trainVerbose, boolean getTestAccuracy,
+			boolean getTrainingAccuracy, boolean testVerbose) 
 					throws Exception {
 		long initialTimeStart = System.nanoTime();
 		
@@ -76,43 +82,64 @@ public class NeuralNetwork {
 			long initialTimeEpoch = System.nanoTime();
 			String currentProgressBar = "";
 			
-			System.out.println("-- " + EPOCH_MESSAGE + " " + i + "/" + epochs + 
-				" --");
+			System.out.println(EPOCH_MESSAGE + " " + i + "/" + epochs);
+			System.out.println("\n" + Train.SEPARATOR + "\n");
+			System.out.println(TRAINING_MESSAGE);
 			
 			for (int j = 0; j < miniBatches.length; j++) {
 				double[][][][] miniBatch = miniBatches[j];
 				
 				this.stochasticGradientDescent(miniBatch, learningRate);
 				
+				// Display progress bar
 				if (trainVerbose) {
-					if (j > 0) {
-						LoadData.deleteProgressBar(currentProgressBar);
-					}
-					
 					currentProgressBar = 
-						LoadData.getProgressBar(TRAINING_PROGRESS_MESSAGE, j + 1, 
+						LoadData.updateProgressBar(currentProgressBar, 
+								LoadData.PROGRESS_MESSAGE, (j + 1), 
 								miniBatches.length, MINI_BATCH_UNIT);
 					
 					System.out.print(currentProgressBar);
-					
-					if (j == miniBatches.length - 1) {
-						System.out.print('\n');
-					}
 				}
+			}
+			
+			System.out.println(LoadData.DONE_MESSAGE + "\n");
+			
+			if (getTestAccuracy || getTrainingAccuracy) {
+				System.out.println(TESTING_MESSAGE);
+			}
+			
+			double testAccuracy = (getTestAccuracy ? this.getAccuracy(
+					testData, TEST_IMAGE_UNIT, testVerbose) : 0);
+			double trainingAccuracy = (getTrainingAccuracy ? this.getAccuracy(
+					trainingData, TRAIN_IMAGE_UNIT, testVerbose) : 0);
+			
+			if (getTestAccuracy || getTrainingAccuracy) {
+				System.out.println(LoadData.DONE_MESSAGE + "\n");
+				System.out.print(ACCURACY_MESSAGE + " ");
+			}
+			
+			// Test accuracy output
+			if (getTestAccuracy) {
+				System.out.print(testAccuracy + ACCURACY_UNIT + " "  +
+						TEST_ACCURACY_TITLE +
+						(getTrainingAccuracy ? ", " : "\n"));
+			}
+			
+			// Training accuracy output
+			if (getTrainingAccuracy) {
+				System.out.print(trainingAccuracy + ACCURACY_UNIT + " " + 
+						TRAIN_ACCURACY_TITLE + "\n");
 			}
 			
 			long elapsedTimeStart = System.nanoTime() - initialTimeStart;
 			long elapsedTimeEpoch = System.nanoTime() - initialTimeEpoch;
 			
-			System.out.println(ACCURACY_MESSAGE + " " + 
-					this.getAccuracy(testData, TEST_IMAGE_UNIT, testVerbose) + 
-					TEST_ACCURACY_MESSAGE + 
-					this.getAccuracy(trainingData, TRAIN_IMAGE_UNIT, testVerbose) + 
-					TRAIN_ACCURACY_MESSAGE);
+			// Elapsed time output
 			System.out.println(TIME_ELAPSED_MESSAGE + " " + 
-				elapsedTimeStart / NANOSECOND_RATIO + TRAINING_START_MESSAGE +
-				elapsedTimeEpoch / NANOSECOND_RATIO + EPOCH_START_MESSAGE +
-				'\n');
+				elapsedTimeStart / NANOSECOND_RATIO + TRAIN_START_MESSAGE +
+				elapsedTimeEpoch / NANOSECOND_RATIO + EPOCH_START_MESSAGE);
+			
+			System.out.println("\n" + Train.SEPARATOR + "\n\n");
 		}
 	}
 	
@@ -142,19 +169,12 @@ public class NeuralNetwork {
 			}
 			
 			if (verbose) {
-				if (i > 0) {
-					LoadData.deleteProgressBar(currentProgressBar);
-				}
-				
 				currentProgressBar = 
-					LoadData.getProgressBar(TESTING_PROGRESS_MESSAGE, i + 1, 
-							dataSet.length, unit);
+					LoadData.updateProgressBar(currentProgressBar,
+							LoadData.PROGRESS_MESSAGE, i + 1, images.length, 
+							unit);
 				
 				System.out.print(currentProgressBar);
-				
-				if (i == dataSet.length - 1) {
-					System.out.print('\n');
-				}
 			}
 		}
 		

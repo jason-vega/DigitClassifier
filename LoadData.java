@@ -88,19 +88,10 @@ public class LoadData {
 			double[][] block = new double[blockLength][];
 			
 			if (verbose) {
-				if (i > 0) {
-					deleteProgressBar(currentProgressBar);
-				}
-				
-				currentProgressBar = 
-					getProgressBar(PROGRESS_MESSAGE, i + 1, dataBlocks,
-						unit);
+				currentProgressBar = updateProgressBar(currentProgressBar, 
+						PROGRESS_MESSAGE, (i + 1), dataBlocks, unit);
 				
 				System.out.print(currentProgressBar);
-				
-				if (i == dataBlocks - 1) {
-					System.out.print('\n');
-				}
 			}
 			
 			for (int j = 0; j < blockLength; j++) {
@@ -165,6 +156,32 @@ public class LoadData {
 		line += endLine;
 		
 		return line;
+	}
+	
+	/**
+	 * Updates the progress bar by erasing the old one and returning a new one.
+	 * 
+	 * @param currentProgressBar The current progress bar.
+	 * @param newMessage The message to display before the new progress bar.
+	 * @param newCurrent The current iteration for the new progress bar.
+	 * @param newTotal The total amount of iterations for the new progress bar.
+	 * @return the new progress bar.
+	 */
+	public static String updateProgressBar(String currentProgressBar, 
+			String message, int current, int total, String unit) {
+		String newProgressBar = "";
+		
+		if (current > 1) {
+			deleteProgressBar(currentProgressBar);
+		}
+		
+		newProgressBar = getProgressBar(message, current, total, unit);
+		
+		if (current == total) {
+			newProgressBar += "\n";
+		}
+		
+		return newProgressBar;
 	}
 	
 	/**

@@ -9,10 +9,10 @@ public class Train {
 	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
-	public static final String TRAINING_IMAGE_FILE_PATH = "";
-	public static final String TRAINING_LABEL_FILE_PATH = "";
-	public static final String TEST_IMAGE_FILE_PATH = "";
-	public static final String TEST_IMAGE_LABEL_PATH = "";
+	public static final String TRAINING_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-images-idx3-ubyte";
+	public static final String TRAINING_LABEL_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-labels-idx1-ubyte";
+	public static final String TEST_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-images-idx3-ubyte";
+	public static final String TEST_IMAGE_LABEL_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-labels-idx1-ubyte";
 	
 	public static final int IMAGE_FILE_OFFSET = 16;
 	public static final int LABEL_FILE_OFFSET = 8;
@@ -22,8 +22,11 @@ public class Train {
 	
 	public static final boolean LOAD_IMAGE_VERBOSE = false;
 	public static final boolean LOAD_LABEL_VERBOSE = false;
-	public static final boolean TRAIN_VERBOSE = true;
+	public static final boolean TRAIN_VERBOSE = false;
 	public static final boolean TEST_VERBOSE = false;
+	
+	public static final boolean GET_TEST_ACCURACY_EACH_EPOCH = true;
+	public static final boolean GET_TRAINING_ACCURACY_EACH_EPOCH = false;
 	
 	public static final int INPUT_DATA_COMPONENTS = 2;
 	
@@ -37,10 +40,13 @@ public class Train {
 	public static final String IMAGE_UNIT = "image";
 	public static final String LABEL_UNIT = "label";
 	
-	public static final String START_MESSAGE = "MNIST Digit Classifier by Jason"
-			+ " Vega";
+	public static final String START_MESSAGE = "MNIST Digit Classifier by "
+			+ "Jason Vega";
 	public static final String SEPARATOR = 
 			"------------------------------------";
+	
+	public static final String FINAL_TEST_ACCURACY_MESSAGE = 
+			"FINAL TEST ACCURACY: ";
 	
 	/**
 	 * Initializes and trains a neural network using data from the MNIST data 
@@ -53,7 +59,7 @@ public class Train {
 		System.out.println(START_MESSAGE + '\n');
 		System.out.println(SEPARATOR + '\n');
 		
-		NeuralNetwork n = new NeuralNetwork(
+		NeuralNetwork net = new NeuralNetwork(
 				INPUT_LAYER_SIZE,
 				FIRST_HIDDEN_LAYER_SIZE,
 				OUTPUT_LAYER_SIZE
@@ -72,7 +78,7 @@ public class Train {
 				LABEL_FILE_OFFSET, 1, MAX_TEST_INPUTS, LABEL_UNIT,
 				NORMALIZE_LABEL_DATA, LOAD_LABEL_VERBOSE);
 		
-		System.out.println(SEPARATOR + '\n');
+		System.out.println(SEPARATOR + "\n\n");
 		
 		double[][][] trainImages = trainImageLoad.getData();
 		double[][][] trainLabels = vectorizeLabels(trainLabelLoad.getData());
@@ -88,8 +94,17 @@ public class Train {
 			testLabels
 		};
 		
-		n.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
-		TRAIN_VERBOSE, TEST_VERBOSE);
+		net.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
+		TRAIN_VERBOSE, GET_TEST_ACCURACY_EACH_EPOCH, 
+		GET_TRAINING_ACCURACY_EACH_EPOCH, TEST_VERBOSE);
+		
+		if (!GET_TEST_ACCURACY_EACH_EPOCH) {
+			double testAccuracy = net.getAccuracy(testData, 
+					NeuralNetwork.TEST_IMAGE_UNIT, TEST_VERBOSE);
+			
+			System.out.println(FINAL_TEST_ACCURACY_MESSAGE + " " + 
+					testAccuracy + NeuralNetwork.ACCURACY_UNIT + "\n");
+		}
 	}
 	
 	/**

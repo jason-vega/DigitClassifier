@@ -39,7 +39,6 @@ and change it to
 ```
 public static final double LEARNING_RATE = 0.01;
 ```
-Recompile and run the program so that the new hyperparameter(s) can come into effect.
 ## Adding/Remove Layers
 Locate the following lines in *Train.java*:
 ```
@@ -56,11 +55,11 @@ public static final int OUTPUT_LAYER_SIZE = 10;
 ```
 Next, locate the following lines:
 ```
-NeuralNetwork n = new NeuralNetwork(new int[]{
+NeuralNetwork n = new NeuralNetwork(
   INPUT_LAYER_SIZE,
   FIRST_HIDDEN_LAYER_SIZE,
   OUTPUT_LAYER_SIZE
-});
+);
 ```
 The NeuralNetwork constructor accepts an array of integers denoting the number of neurons in each layer, where the *i*th integer corresponds to the *i*th layer. If you have removed any of the layer constants, added new ones or renamed them, these changes must be reflected here. Following up with our example, we change these lines to the following:
 ```
@@ -71,7 +70,7 @@ NeuralNetwork n = new NeuralNetwork(new int[]{
   OUTPUT_LAYER_SIZE
 });
 ```
-We have now added a second hidden layer of 30 neurons, while the first hidden layer's neurons have decreased to 75! Recompile and run the program so that the new network structure can come into effect.
+We have now added a second hidden layer of 30 neurons, while the first hidden layer's neurons have decreased to 75!
 ## Limiting the Number of Training/Test Images
 If you wish to test a smaller subset of the MNIST data set, you can limit the size of the subset by locating and modifying the following lines in *Train.java*:
 ```
@@ -83,16 +82,22 @@ For instance, say we only wish to train our neural network on the first 10,000 t
 public static final int MAX_TRAINING_INPUTS = 10000;
 public static final int MAX_TEST_INPUTS = 5000;
 ```
-Recompile and run the program to load the subset of MNIST data.
-## Output Data Loading and Training Progress
-Sometimes the amount of data you wish to process can make it seem like your program is indefinitely stuck. This is especially true when training with multiple dense layers. In such cases, you may wish to output current progress info; i.e. we wish to set verbose mode to *true*. Verbose mode is on by default for training, and off by default for loading image data, loading label data and testing. To toggle verbose mode for any of these actions, locate the following lines:
+## Output Loading, Training and Testing Progress
+Sometimes the amount of data you wish to process can make it seem like your program is indefinitely stuck. This is especially true when training with multiple dense layers. In such cases, you may wish to output current progress info; i.e. we wish to set verbose mode to *true*. Verbose mode is off by default for loading image data, loading label data, training and testing. To toggle verbose mode for any of these actions, locate the following lines in *Train.java*:
 ```
 public static final boolean LOAD_IMAGE_VERBOSE = false;
 public static final boolean LOAD_LABEL_VERBOSE = false;
-public static final boolean TRAIN_VERBOSE = true;
+public static final boolean TRAIN_VERBOSE = false;
 public static final boolean TEST_VERBOSE = false;
 ```
-and set the desired variable(s) to true (on) or false (off). Recompile and run the program so that the changes can take effect.
+and set the desired variable(s) to true (on) or false (off).
+## Testing and Training Set Accuracy
+By default, the neural network's accuracy on the test set is calculated after performing gradient descent during each epoch. It is also possible to calculate the training set accuracy at the end of each epoch, which may be useful to detect over-fitting when compared to the test set accuracy. To toggle calculating either of these accuracies, locate the following lines in *Train.java*:
+```
+public static final boolean GET_TEST_ACCURACY_EACH_EPOCH = true;
+public static final boolean GET_TRAINING_ACCURACY_EACH_EPOCH = false;
+```
+and modify the values as desired. If GET_TEST_ACCURACY_EACH_EPOCH is set to false, then the final test accuracy after completing all epochs will be computed at the end of the program.
 ## Changing the cost function
 There is no explicit cost function defined in *NeuralNetwork.java*. That's because backpropogation only concerns itself with the *derivative* of the cost function! Specifically, we define a method that represents the cost derivative with respect to the activation function called costDerivativeWithRespectToActivation(). By default, the assumed cost function is the cross-entropy function. To implement a different cost function, find an expression for the cost derivative with respect to the activation function and implement this in the aforementioned method.
 ## Changing the activation function

@@ -1,3 +1,5 @@
+import java.util.stream.DoubleStream;
+
 /**
  * A helper class of matrix operations for the NeuralNetwork class.
  * 
@@ -57,13 +59,9 @@ public class Matrix {
 		double[][] result = new double[matrix.length][];
 		
 		for (int i = 0; i < matrix.length; i++) {
-			double[] sumValue = new double[] {0};
-			
-			for (int j = 0; j < matrix[i].length; j++) {
-				sumValue[0] += matrix[i][j];
-			}
-			
-			result[i] = sumValue;
+			result[i] = new double[] {
+				DoubleStream.of(matrix[i]).sum()
+			};
 		}
 		
 		return result;
@@ -131,8 +129,8 @@ public class Matrix {
 			double[] row = new double[productColumnSize];
 			
 			for (int i = 0; i < matrixB.length; i++) {
-                                double firstElement = matrixA[r][i];
-
+				double firstElement = matrixA[r][i];
+				
 				for (int c = 0; c < productColumnSize; c++) {
 					row[c] += firstElement * matrixB[i][c];
 				}
@@ -191,12 +189,16 @@ public class Matrix {
 		
 		int transposeRowSize = matrix[0].length;
 		int transposeColumnSize = matrix.length;
-		double[][] result = zeros(transposeRowSize, transposeColumnSize);
+		double[][] result = new double[transposeRowSize][];
 		
-		for (int j = 0; j < transposeColumnSize; j++) {
-			for (int i = 0; i < transposeRowSize; i++) {
-				result[i][j] = matrix[j][i];
+		for (int i = 0; i < transposeRowSize; i++) {
+			double[] row = new double[transposeColumnSize];
+			
+			for (int j = 0; j < transposeColumnSize; j++) {
+				row[j] = matrix[j][i];
 			}
+			
+			result[i] = row;
 		}
 		
 		return result;
@@ -216,13 +218,13 @@ public class Matrix {
 			double[] row = new double[matrix[i].length];
 			
 			for (int j = 0; j < matrix[i].length; j++) {
-				matrix[i][j] = matrix[i][j] * factor;
+				row[j] = matrix[i][j] * factor;
 			}
 			
 			result[i] = row;
 		}
 		
-		return matrix;
+		return result;
 	}
 	
 	/**
@@ -406,12 +408,16 @@ public class Matrix {
 			throw new Exception(UNEQUAL_COLUMN_NUMBER_ERROR);
 		}
 		
-		double[][] result = zeros(vectorList[0].length, vectorList.length);
+		double[][] result = new double[vectorList[0].length][];
 		
-		for (int j = 0; j < vectorList.length; j++) {
-			for (int i = 0; i < vectorList[0].length; i++) {
-				result[i][j] = vectorList[j][i][0];
+		for (int i = 0; i < vectorList[0].length; i++) {
+			double[] row = new double[vectorList.length];
+			
+			for (int j = 0; j < vectorList.length; j++) {
+				row[j] = vectorList[j][i][0];
 			}
+			
+			result[i] = row;
 		}
 		
 		return result;
