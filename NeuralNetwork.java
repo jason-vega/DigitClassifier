@@ -40,7 +40,7 @@ public class NeuralNetwork {
 	 * 
 	 * @param layers An array representing the number of nodes in each layer.
 	 */
-	public NeuralNetwork(int[] layers) {
+	public NeuralNetwork(int... layers) {
 		this.layers = layers;
 		this.numberOfLayers = layers.length;
 		
@@ -130,14 +130,14 @@ public class NeuralNetwork {
 		int correct = 0;
 		String currentProgressBar = "";
 		
-		for (int i = 0; i < dataSet.length; i++) {
-			double data[][][] = dataSet[i];
-			double[][] input = data[0];
-			double[][] label = data[1];
-			double[][] output = forwardPass(input);
+		double[][][] images = dataSet[0];
+		double[][][] labels = dataSet[1];
+		
+		for (int i = 0; i < images.length; i++) {
+			double[][] output = forwardPass(images[i]);
 			int resultIndex = Matrix.argmax(output);
 			
-			if (label[resultIndex][0] == 1) {
+			if (labels[i][resultIndex][0] == 1) {
 				correct++;
 			}
 			
@@ -158,13 +158,14 @@ public class NeuralNetwork {
 			}
 		}
 		
-		return (double) correct / dataSet.length * PERCENTAGE_RATIO;
+		return (double) correct / images.length * PERCENTAGE_RATIO;
 	}
 	
 	/**
 	 * Perform a single forward pass through the network with the given input.
 	 * 
-	 * @param input The input to this neural network.
+	 * @param input The input to this neural network. Can be a single vector or
+	 * a matrix representing multiple inputs.
 	 * @return The output of the neural network.
 	 * @throws Exception 
 	 */
@@ -175,12 +176,13 @@ public class NeuralNetwork {
 		
 		for (int l = 0; l < this.getNumberOfLayers() - 1; l++) {
 			double[][] weightMatrix = weights[l];
-			double[][] biasVector = biases[l];
+			double[][] biasMatrix = Matrix.tile(biases[l], 
+					input[0].length);
 			
 			output = Matrix.activation(
 				Matrix.add(
 					Matrix.product(weightMatrix, output), 
-					biasVector
+					biasMatrix
 				)
 			);
 		}
@@ -198,29 +200,37 @@ public class NeuralNetwork {
 	 */
 	public double[][][][][] getMiniBatches(double[][][][] data, 
 			int miniBatchSize) {
+		double[][][] images = data[0];
+		double[][][] labels = data[1];
 		int numberOfMiniBatches = 
-			(int) Math.ceil((double) data.length / miniBatchSize);
+			(int) Math.ceil((double) images.length / miniBatchSize);
 		double[][][][][] miniBatches = new double[numberOfMiniBatches][][][][];
 		Random randomNumberGenerator = new Random();
-		int[] selected = new int[data.length];
-		int lastMiniBatchSize = data.length % miniBatchSize > 0 ? 
-			data.length % miniBatchSize : miniBatchSize;
+		int[] selected = new int[images.length];
+		int lastMiniBatchSize = images.length % miniBatchSize > 0 ? 
+			images.length % miniBatchSize : miniBatchSize;
 		
 		for (int i = 0; i < numberOfMiniBatches; i++) {
 			int batchSize = (i < numberOfMiniBatches - 1 ? miniBatchSize :
 				lastMiniBatchSize);
-			double[][][][] miniBatch = new double[batchSize][][][];
+			double[][][] miniBatchImages = new double[batchSize][][];
+			double[][][] miniBatchLabels = new double[batchSize][][];
+			double[][][][] miniBatch = new double[][][][] {
+				miniBatchImages,
+				miniBatchLabels
+			};
 			
 			for (int j = 0; j < batchSize; j++) {
 				int randomDataIndex = 0;
 				
 				do {
 					randomDataIndex = randomNumberGenerator
-							.nextInt(data.length);
+							.nextInt(images.length);
 				} while (selected[randomDataIndex] == 1);
 				
 				selected[randomDataIndex] = 1;
-				miniBatch[j] = data[randomDataIndex];
+				miniBatchImages[j] = images[randomDataIndex];
+				miniBatchLabels[j] = labels[randomDataIndex];
 			}
 			
 			miniBatches[i] = miniBatch;
@@ -246,20 +256,11 @@ public class NeuralNetwork {
 		double[][][] layerInputMatrices = new double[numberOfLayers - 1][][];
 		double[][][] activationMatrices = new double[numberOfLayers][][];
 		
-		double[][][] inputActivations = new double[miniBatch.length][][];
-		double[][][] labels = new double[miniBatch.length][][];
-		
-		// Extract input activations and labels from mini-batch
-		for (int i = 0; i < miniBatch.length; i++) {
-			inputActivations[i] = miniBatch[i][0];
-			labels[i] = miniBatch[i][1];
-		}
-		
-		activationMatrices[0] = Matrix.concatenate(inputActivations);
+		activationMatrices[0] = Matrix.concatenate(miniBatch[0]);
 		
 		double[][] labelMatrix = 
-				Matrix.concatenate(labels);
-		
+				Matrix.concatenate(miniBatch[1]);
+
 		// Forward pass
 		for (int l = 1; l < numberOfLayers; l++) {
 			layerInputMatrices[l - 1] = 
@@ -267,7 +268,7 @@ public class NeuralNetwork {
 						Matrix.product(weights[l - 1], 
 								activationMatrices[l - 1]),
 						Matrix.tile(biases[l - 1], 
-								miniBatch.length)
+								miniBatch[0].length)
 					);
 			activationMatrices[l] = 
 					Matrix.activation(layerInputMatrices[l - 1]);

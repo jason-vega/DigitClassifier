@@ -53,11 +53,11 @@ public class Train {
 		System.out.println(START_MESSAGE + '\n');
 		System.out.println(SEPARATOR + '\n');
 		
-		NeuralNetwork n = new NeuralNetwork(new int[]{
+		NeuralNetwork n = new NeuralNetwork(
 				INPUT_LAYER_SIZE,
 				FIRST_HIDDEN_LAYER_SIZE,
 				OUTPUT_LAYER_SIZE
-		});
+		);
 		
 		LoadData trainImageLoad = new LoadData(TRAINING_IMAGE_FILE_PATH, 
 				IMAGE_FILE_OFFSET, INPUT_LAYER_SIZE, MAX_TRAINING_INPUTS, 
@@ -75,40 +75,37 @@ public class Train {
 		System.out.println(SEPARATOR + '\n');
 		
 		double[][][] trainImages = trainImageLoad.getData();
-		double[][][] trainLabels = trainLabelLoad.getData();
-		double[][][][] trainData = zip(trainImages, trainLabels);
+		double[][][] trainLabels = vectorizeLabels(trainLabelLoad.getData());
+		double[][][][] trainData = new double[][][][] {
+			trainImages,
+			trainLabels
+		};
 		
 		double[][][] testImages = testImageLoad.getData();
-		double[][][] testLabels = testLabelLoad.getData();
-		double[][][][] testData = zip(testImages, testLabels);
+		double[][][] testLabels = vectorizeLabels(testLabelLoad.getData());
+		double[][][][] testData = new double[][][][] {
+			testImages,
+			testLabels
+		};
 		
 		n.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
 		TRAIN_VERBOSE, TEST_VERBOSE);
 	}
 	
 	/**
-	 * Combines image and label data into one array.
+	 * Restructures label data for use in the neural network.
 	 * 
-	 * @param images Image data.
 	 * @param labels Label data.
-	 * @return The array containing the combined data.
+	 * @return the restructured label data.
 	 */
-	public static double[][][][] zip(double[][][] images, 
-		double[][][] labels) {
-		double[][][][] combined = new double[images.length][][][];
+	public static double[][][] vectorizeLabels(double[][][] labels) {
+		double[][][] result = new double[labels.length][][];
 		
-		for(int i = 0; i < images.length; i++) {
-			double[][] testImage = images[i];
-			double[][] testLabel = 
-					Matrix.vectorize(1, (int) labels[i][0][0], 
+		for(int i = 0; i < labels.length; i++) {
+			result[i] = Matrix.vectorize(1, (int) labels[i][0][0], 
 							OUTPUT_LAYER_SIZE);
-			double[][][] data = new double[INPUT_DATA_COMPONENTS][][];
-			data[0] = testImage;
-			data[1] = testLabel;
-			
-			combined[i] = data;
 		}
 		
-		return combined;
+		return result;
 	}
 }
