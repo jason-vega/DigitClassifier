@@ -1,3 +1,5 @@
+import java.util.stream.DoubleStream;
+
 /**
  * A helper class of matrix operations for the NeuralNetwork class.
  * 
@@ -45,6 +47,24 @@ public class Matrix {
 		}
 		
 		return sum;
+	}
+	
+	/**
+	 * Returns a vector that is the sum of the columns of the given matrix.
+	 * 
+	 * @param matrix The matrix to sum the columns of.
+	 * @return The resulting vector.
+	 */
+	public static double[][] sumColumns(double[][] matrix) {
+		double[][] result = new double[matrix.length][];
+		
+		for (int i = 0; i < matrix.length; i++) {
+			result[i] = new double[] {
+				DoubleStream.of(matrix[i]).sum()
+			};
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -350,23 +370,73 @@ public class Matrix {
 	}
 	
 	/**
-	 * Verifies whether the dimensions of the two given matrices are equal.
+	 * Returns a new matrix constructed by repeating the given vector reps 
+	 * amount of times.
 	 * 
-	 * @param matrixA The first matrix.
-	 * @param matrixB The second matrix.
-	 * @return Whether the dimensions of the two given matrices are equal.
+	 * @param vector The vector to repeat.
+	 * @param reps The number of repetitions.
+	 * @return The new matrix.
 	 */
-	public static boolean hasEqualDimensions(double[][] matrixA, 
-			double[][] matrixB) {
-		boolean equal = true;
+	public static double[][] tile(double[][] vector, int reps) {
+		double[][] result = new double[vector.length][];
 		
-		if (matrixA.length != matrixB.length) {
-			equal = false;
+		for (int i = 0; i < vector.length; i++) {
+			double[] row = new double[reps];
+			
+			for (int j = 0; j < reps; j++) {
+				row[j] = vector[i][0];
+			}
+			
+			result[i] = row;
 		}
 		
-		for (int i = 0; equal && i < matrixA.length; i++) {
-			if (matrixA[i].length != matrixB[i].length) {
-				equal = false;
+		return result;
+	}
+	
+	/**
+	 * Returns a matrix that is the concatenation of the given vectors.
+	 * 
+	 * @param vectorList The list of vectors to concatenate.
+	 * @return The resulting matrix.
+	 * @throws Exception 
+	 */
+	public static double[][] concatenate(double[][][] vectorList) 
+			throws Exception {
+		if (!hasEqualDimensions(vectorList)) {
+			throw new Exception(UNEQUAL_COLUMN_NUMBER_ERROR);
+		}
+		
+		double[][] result = new double[vectorList[0].length][];
+		
+		for (int i = 0; i < vectorList[0].length; i++) {
+			double[] row = new double[vectorList.length];
+			
+			for (int j = 0; j < vectorList.length; j++) {
+				row[j] = vectorList[j][i][0];
+			}
+			
+			result[i] = row;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Verifies whether the dimensions of all the given matrices are equal.
+	 * 
+	 * @param matrices The matrices to verify.
+	 * @return whether the dimensions of all the given matrices are equal.
+	 */
+	public static boolean hasEqualDimensions(double[][]... matrices) {
+		boolean equal = true;
+		
+		for (int i = 1; equal && i < matrices.length; i++) {
+			// Check for equal number of rows
+			equal = matrices[i].length == matrices[i - 1].length;
+			
+			// Check for equal number of columns
+			for (int j = 0; equal && j < matrices[i].length; j++) {
+				equal = matrices[i][j].length == matrices[i - 1][j].length;
 			}
 		}
 		
@@ -377,7 +447,7 @@ public class Matrix {
 	 * Verifies whether the number of columns for each row in each given matrix
 	 * is constant.
 	 * 
-	 * @param matrix
+	 * @param matrices The matrices to verify.
 	 * @return Whether the number of columns for each row in each given matrix
 	 * is constant.
 	 */

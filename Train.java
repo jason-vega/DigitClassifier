@@ -9,10 +9,10 @@ public class Train {
 	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
-	public static final String TRAINING_IMAGE_FILE_PATH = "";
-	public static final String TRAINING_LABEL_FILE_PATH = "";
-	public static final String TEST_IMAGE_FILE_PATH = "";
-	public static final String TEST_IMAGE_LABEL_PATH = "";
+	public static final String TRAINING_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-images-idx3-ubyte";
+	public static final String TRAINING_LABEL_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-labels-idx1-ubyte";
+	public static final String TEST_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-images-idx3-ubyte";
+	public static final String TEST_IMAGE_LABEL_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-labels-idx1-ubyte";
 	
 	public static final int IMAGE_FILE_OFFSET = 16;
 	public static final int LABEL_FILE_OFFSET = 8;

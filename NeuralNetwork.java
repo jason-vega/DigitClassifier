@@ -68,10 +68,6 @@ public class NeuralNetwork {
 			double learningRate, int epochs, double[][][][] testData, 
 			boolean trainVerbose, boolean testVerbose) 
 					throws Exception {
-		double weights[][][] = this.getWeights();
-		double biases[][][] = this.getBiases();
-		int numberOfLayers = this.getNumberOfLayers();
-		
 		long initialTimeStart = System.nanoTime();
 		
 		for (int i = 1; i <= epochs; i++) {
@@ -85,10 +81,8 @@ public class NeuralNetwork {
 			
 			for (int j = 0; j < miniBatches.length; j++) {
 				double[][][][] miniBatch = miniBatches[j];
-				double[][][][] gradientSum = 
-					this.stochasticGradientDescent(miniBatch);
-				double[][][] gradientSumWithRespectToWeights = gradientSum[0];
-				double[][][] gradientSumWithRespectToBiases = gradientSum[1];
+				
+				this.stochasticGradientDescent(miniBatch, learningRate);
 				
 				if (trainVerbose) {
 					if (j > 0) {
@@ -104,20 +98,6 @@ public class NeuralNetwork {
 					if (j == miniBatches.length - 1) {
 						System.out.print('\n');
 					}
-				}
-				
-				for (int k = 0; k < numberOfLayers - 1; k++) {
-					weights[k] = Matrix.subtract(
-						weights[k], 
-						Matrix.scale(learningRate / miniBatch.length, 
-							gradientSumWithRespectToWeights[k])
-					);
-					
-					biases[k] = Matrix.subtract(
-						biases[k], 
-						Matrix.scale(learningRate / miniBatch.length, 
-							gradientSumWithRespectToBiases[k])
-					);
 				}
 			}
 			
@@ -257,129 +237,125 @@ public class NeuralNetwork {
 	 * @param learningRate The learning rate for gradient descent.
 	 * @throws Exception 
 	 */
-	public double[][][][] stochasticGradientDescent(double[][][][] miniBatch) 
-			throws Exception {
+	public void stochasticGradientDescent(double[][][][] miniBatch, 
+			double learningRate) throws Exception {
 		double weights[][][] = this.getWeights();
 		double biases[][][] = this.getBiases();
 		int numberOfLayers = this.getNumberOfLayers();
 		
-		double[][][][] gradientSum =
-			new double[COST_GRADIENT_COMPONENTS][][][];
+		double[][][] layerInputMatrices = new double[numberOfLayers - 1][][];
+		double[][][] activationMatrices = new double[numberOfLayers][][];
 		
+		double[][][] inputActivations = new double[miniBatch.length][][];
+		double[][][] labels = new double[miniBatch.length][][];
+		
+		// Extract input activations and labels from mini-batch
 		for (int i = 0; i < miniBatch.length; i++) {
-			// Get input to the neural network
-			double[][][] data = miniBatch[i];
-			double[][] input = data[0];
-			double[][] label = data[1];
-			
-			// Save layer inputs and activations
-			double[][][] layerInputs = new double[numberOfLayers - 1][][];
-			double[][][] activations = new double[numberOfLayers][][];
-			
-			activations[0] = input;
-			
-			// Feedforward
-			for (int l = 0; l < numberOfLayers - 1; l++) {
-				double[][] previousActivation = activations[l];
-				double[][] weightMatrix = weights[l];
-				double[][] biasVector = biases[l];
-				double[][] layerInput = Matrix.add(
-					Matrix.product(weightMatrix, previousActivation),
-					biasVector);
-				double[][] layerActivation = Matrix.activation(layerInput);
-				
-				layerInputs[l] = layerInput;
-				activations[l + 1] = layerActivation;
-			}
-			
-			// Calculate gradient
-			double[][][][] gradient = backpropogate(layerInputs, activations, 
-				label);
-			double[][][] gradientWithRespectToWeights = gradient[0];
-			double[][][] gradientWithRespectToBiases = gradient[1];
-			
-			// Contribute to gradient sum
-			if (i == 0) {
-				gradientSum[0] = gradientWithRespectToWeights;
-				gradientSum[1] = gradientWithRespectToBiases;
-			}
-			else {
-				for (int j = 0; j < gradientSum[0].length; j++) {
-					gradientSum[0][j] = Matrix.add(gradientSum[0][j],
-							gradientWithRespectToWeights[j]);
-				}
-				
-				for (int j = 0; j < gradientSum[1].length; j++) {
-					gradientSum[1][j] = Matrix.add(gradientSum[1][j],
-							gradientWithRespectToBiases[j]);
-				}
-			}
+			inputActivations[i] = miniBatch[i][0];
+			labels[i] = miniBatch[i][1];
 		}
 		
-		return gradientSum;
+		activationMatrices[0] = Matrix.concatenate(inputActivations);
+		
+		double[][] labelMatrix = 
+				Matrix.concatenate(labels);
+		
+		// Forward pass
+		for (int l = 1; l < numberOfLayers; l++) {
+			layerInputMatrices[l - 1] = 
+					Matrix.add(
+						Matrix.product(weights[l - 1], 
+								activationMatrices[l - 1]),
+						Matrix.tile(biases[l - 1], 
+								miniBatch.length)
+					);
+			activationMatrices[l] = 
+					Matrix.activation(layerInputMatrices[l - 1]);
+		}
+		
+		// Calculate the gradient sum
+		double[][][][] gradientSum = backpropogate(layerInputMatrices, 
+				activationMatrices, labelMatrix);
+		double[][][] gradientSumWithRespectToWeights = gradientSum[0];
+		double[][][] gradientSumWithRespectToBiases = gradientSum[1];
+		
+		// Perform gradient descent
+		for (int k = 0; k < numberOfLayers - 1; k++) {
+			weights[k] = Matrix.subtract(
+				weights[k], 
+				Matrix.scale(learningRate / miniBatch.length, 
+					gradientSumWithRespectToWeights[k])
+			);
+			
+			biases[k] = Matrix.subtract(
+				biases[k], 
+				Matrix.scale(learningRate / miniBatch.length, 
+					gradientSumWithRespectToBiases[k])
+			);
+		}
 	}
 	
 	/**
-	 * Returns the gradient of the cost function calculated through 
-	 * backpropogation.
+	 * Returns the sum of cost function gradients across all mini-batch inputs 
+	 * calculated through backpropogation.
 	 * 
-	 * @param layerInputs An array of inputs to each layer after the first.
-	 * @param activations An array of activations to each layer (including the
-	 * input to the neural network.)
-	 * @param label The label associated with the input to the neural network.
-	 * @return The gradient.
+	 * @param layerInputMatrices An array of input matrices to each layer after
+	 * the first.
+	 * @param activationMatrices An array of activation matrices to each layer 
+	 * (including the input to the neural network.)
+	 * @param labelMatrix The label matrix associated with the input activation 
+	 * matrix to the neural network.
+	 * @return The gradient sum.
 	 * @throws Exception 
 	 */
-	double[][][][] backpropogate(double[][][] layerInputs, 
-		double[][][] activations, double[][] label) throws Exception {
+	double[][][][] backpropogate(double[][][] layerInputMatrices, 
+			double[][][] activationMatrices, double[][] labelMatrix) 
+					throws Exception {
 		double weights[][][] = this.getWeights();
 		int biasesLength = this.getBiases().length;
 		
 		int layerFromEnd = 1;
 		
-		double[][][][] gradient = new double[COST_GRADIENT_COMPONENTS][][][];
-		double[][][] gradientWithRespectToWeights = 
+		double[][][][] gradientSum = 
+			new double[COST_GRADIENT_COMPONENTS][][][];
+		double[][][] gradientSumWithRespectToWeights = 
 			new double[weights.length][][];
-		double[][][] gradientWithRespectToBiases = 
+		double[][][] gradientSumWithRespectToBiases = 
 			new double[biasesLength][][];
 		
-		double[][] currentLayerActivation = 
-			activations[activations.length - layerFromEnd];
-		double[][] previousLayerActivation = 
-			activations[activations.length - layerFromEnd - 1];
-		double[][] currentLayerInput = 
-			layerInputs[layerInputs.length - layerFromEnd];
+		double[][] currentLayerActivationMatrix = 
+			activationMatrices[activationMatrices.length - layerFromEnd];
+		double[][] previousLayerActivationMatrix = 
+			activationMatrices[activationMatrices.length - layerFromEnd - 1];
+		double[][] currentLayerInputMatrix = 
+			layerInputMatrices[layerInputMatrices.length - layerFromEnd];
 		
 		double[][] costGradientWithRespectToActivation =
 			Matrix.costDerivativeWithRespectToActivation(
-				currentLayerActivation, label);
+					currentLayerActivationMatrix, labelMatrix);
 		double[][] activationPrime = Matrix.activationPrime(
-			currentLayerInput);
+				currentLayerInputMatrix);
 		double[][] layerError = Matrix.hadamardProduct(
-			costGradientWithRespectToActivation, activationPrime);
+				costGradientWithRespectToActivation, activationPrime);
 		
-		double[][] layerGradientWithRespectToWeights =
-			Matrix.product(layerError, 
-				Matrix.transpose(previousLayerActivation));
-		double[][] layerGradientWithRespectToBiases = 
-			layerError;
-		
-		gradientWithRespectToWeights[weights.length - layerFromEnd] = 
-				layerGradientWithRespectToWeights;
-		gradientWithRespectToBiases[biasesLength - layerFromEnd] = 
-				layerGradientWithRespectToBiases;
+		gradientSumWithRespectToWeights[weights.length - layerFromEnd] = 
+				Matrix.product(layerError, 
+						Matrix.transpose(previousLayerActivationMatrix));
+		gradientSumWithRespectToBiases[biasesLength - layerFromEnd] = 
+				Matrix.sumColumns(layerError);
 		
 		layerFromEnd++;
 		
-		for (; layerFromEnd <= layerInputs.length; layerFromEnd++) {
-			previousLayerActivation = 
-				activations[activations.length - layerFromEnd - 1];
-			currentLayerInput = 
-				layerInputs[layerInputs.length - layerFromEnd];
+		for (; layerFromEnd <= layerInputMatrices.length; layerFromEnd++) {
+			previousLayerActivationMatrix = 
+				activationMatrices[activationMatrices.length - layerFromEnd - 
+				                   1];
+			currentLayerInputMatrix = 
+				layerInputMatrices[layerInputMatrices.length - layerFromEnd];
 			
 			double[][] nextLayerWeights = 
 				weights[weights.length - layerFromEnd + 1];
-			activationPrime = Matrix.activationPrime(currentLayerInput);
+			activationPrime = Matrix.activationPrime(currentLayerInputMatrix);
 			layerError = Matrix.hadamardProduct(
 				Matrix.product(
 					Matrix.transpose(nextLayerWeights), 
@@ -388,22 +364,17 @@ public class NeuralNetwork {
 				activationPrime
 			);
 			
-			layerGradientWithRespectToWeights =
-				Matrix.product(layerError, 
-					Matrix.transpose(previousLayerActivation));
-			layerGradientWithRespectToBiases = 
-				layerError;
-			
-			gradientWithRespectToWeights[weights.length - layerFromEnd] = 
-				layerGradientWithRespectToWeights;
-			gradientWithRespectToBiases[biasesLength - layerFromEnd] = 
-				layerGradientWithRespectToBiases;
+			gradientSumWithRespectToWeights[weights.length - layerFromEnd] = 
+					Matrix.product(layerError, 
+							Matrix.transpose(previousLayerActivationMatrix));
+			gradientSumWithRespectToBiases[biasesLength - layerFromEnd] = 
+					Matrix.sumColumns(layerError);
 		}
 		
-		gradient[0] = gradientWithRespectToWeights;
-		gradient[1] = gradientWithRespectToBiases;
+		gradientSum[0] = gradientSumWithRespectToWeights;
+		gradientSum[1] = gradientSumWithRespectToBiases;
 		
-		return gradient;
+		return gradientSum;
 	}
 	
 	/**
