@@ -31,9 +31,9 @@ public class NeuralNetwork {
 	public static final String TRAIN_ACCURACY_TITLE = "(training)";
 	
 	private int[] layers;
-	private int numberOfLayers;
 	private double[][][] weights;
 	private double[][][] biases;
+	private int numberOfLayers;
 	
 	/**
 	 * Constructs a new neural network representation where the number of nodes
@@ -57,6 +57,8 @@ public class NeuralNetwork {
 	 * @param trainingData The training data, including the input and 
 	 * corresponding labels.
 	 * @param learningRate The learning rate for the optimization method.
+	 * @param regularization The regularization parameter for the optimization 
+	 * method.
 	 * @param epochs The number of training sessions.
 	 * @param testData The test data, including the input and corresponding
 	 * labels.
@@ -70,9 +72,10 @@ public class NeuralNetwork {
 	 * @throws Exception 
 	 */
 	public void train(double[][][][] trainingData, int miniBatchSize, 
-			double learningRate, int epochs, double[][][][] testData, 
-			boolean trainVerbose, boolean getTestAccuracy,
-			boolean getTrainingAccuracy, boolean testVerbose) 
+			double learningRate, double regularization, int epochs, 
+			double[][][][] testData, boolean trainVerbose, 
+			boolean getTestAccuracy, boolean getTrainingAccuracy, 
+			boolean testVerbose) 
 					throws Exception {
 		long initialTimeStart = System.nanoTime();
 		
@@ -89,7 +92,8 @@ public class NeuralNetwork {
 			for (int j = 0; j < miniBatches.length; j++) {
 				double[][][][] miniBatch = miniBatches[j];
 				
-				this.stochasticGradientDescent(miniBatch, learningRate);
+				this.stochasticGradientDescent(miniBatch, learningRate, 
+						regularization, trainingData[0].length);
 				
 				// Display progress bar
 				if (trainVerbose) {
@@ -140,6 +144,69 @@ public class NeuralNetwork {
 				elapsedTimeEpoch / NANOSECOND_RATIO + EPOCH_START_MESSAGE);
 			
 			System.out.println("\n" + Train.SEPARATOR + "\n\n");
+		}
+	}
+	
+	/**
+	 * Performs stochastic gradient descent using the provided mini-batch, 
+	 * learning rate and regularization parameter.
+	 * 
+	 * @param miniBatch The training data mini-batch.
+	 * @param learningRate The learning rate for gradient descent.
+	 * @param regularization The regularization parameter for the optimization 
+	 * method.
+	 * @param trainingSetSize The size of the training set.
+	 * 
+	 * @throws Exception 
+	 */
+	public void stochasticGradientDescent(double[][][][] miniBatch, 
+			double learningRate, double regularization, int trainingSetSize) 
+					throws Exception {
+		double weights[][][] = this.getWeights();
+		double biases[][][] = this.getBiases();
+		int numberOfLayers = this.getNumberOfLayers();
+		
+		double[][][] layerInputMatrices = new double[numberOfLayers - 1][][];
+		double[][][] activationMatrices = new double[numberOfLayers][][];
+		
+		activationMatrices[0] = Matrix.concatenate(miniBatch[0]);
+		
+		double[][] labelMatrix = 
+				Matrix.concatenate(miniBatch[1]);
+
+		// Forward pass
+		for (int l = 1; l < numberOfLayers; l++) {
+			layerInputMatrices[l - 1] = 
+					Matrix.add(
+						Matrix.product(weights[l - 1], 
+								activationMatrices[l - 1]),
+						Matrix.tile(biases[l - 1], 
+								miniBatch[0].length)
+					);
+			activationMatrices[l] = 
+					Matrix.activation(layerInputMatrices[l - 1]);
+		}
+		
+		// Calculate the gradient sum
+		double[][][][] gradientSum = backpropogate(layerInputMatrices, 
+				activationMatrices, labelMatrix);
+		double[][][] gradientSumWithRespectToWeights = gradientSum[0];
+		double[][][] gradientSumWithRespectToBiases = gradientSum[1];
+		
+		// Perform gradient descent with L2 regularization
+		for (int k = 0; k < numberOfLayers - 1; k++) {
+			weights[k] = Matrix.subtract(
+				Matrix.scale(1 - learningRate * regularization / 
+						trainingSetSize, weights[k]), 
+				Matrix.scale(learningRate / miniBatch.length, 
+					gradientSumWithRespectToWeights[k])
+			);
+			
+			biases[k] = Matrix.subtract(
+				biases[k], 
+				Matrix.scale(learningRate / miniBatch.length, 
+					gradientSumWithRespectToBiases[k])
+			);
 		}
 	}
 	
@@ -260,63 +327,6 @@ public class NeuralNetwork {
 	}
 	
 	/**
-	 * Performs stochastic gradient descent using the provided mini-batch and
-	 * learning rate.
-	 * 
-	 * @param miniBatch The training data mini-batch.
-	 * @param learningRate The learning rate for gradient descent.
-	 * @throws Exception 
-	 */
-	public void stochasticGradientDescent(double[][][][] miniBatch, 
-			double learningRate) throws Exception {
-		double weights[][][] = this.getWeights();
-		double biases[][][] = this.getBiases();
-		int numberOfLayers = this.getNumberOfLayers();
-		
-		double[][][] layerInputMatrices = new double[numberOfLayers - 1][][];
-		double[][][] activationMatrices = new double[numberOfLayers][][];
-		
-		activationMatrices[0] = Matrix.concatenate(miniBatch[0]);
-		
-		double[][] labelMatrix = 
-				Matrix.concatenate(miniBatch[1]);
-
-		// Forward pass
-		for (int l = 1; l < numberOfLayers; l++) {
-			layerInputMatrices[l - 1] = 
-					Matrix.add(
-						Matrix.product(weights[l - 1], 
-								activationMatrices[l - 1]),
-						Matrix.tile(biases[l - 1], 
-								miniBatch[0].length)
-					);
-			activationMatrices[l] = 
-					Matrix.activation(layerInputMatrices[l - 1]);
-		}
-		
-		// Calculate the gradient sum
-		double[][][][] gradientSum = backpropogate(layerInputMatrices, 
-				activationMatrices, labelMatrix);
-		double[][][] gradientSumWithRespectToWeights = gradientSum[0];
-		double[][][] gradientSumWithRespectToBiases = gradientSum[1];
-		
-		// Perform gradient descent
-		for (int k = 0; k < numberOfLayers - 1; k++) {
-			weights[k] = Matrix.subtract(
-				weights[k], 
-				Matrix.scale(learningRate / miniBatch.length, 
-					gradientSumWithRespectToWeights[k])
-			);
-			
-			biases[k] = Matrix.subtract(
-				biases[k], 
-				Matrix.scale(learningRate / miniBatch.length, 
-					gradientSumWithRespectToBiases[k])
-			);
-		}
-	}
-	
-	/**
 	 * Returns the sum of cost function gradients across all mini-batch inputs 
 	 * calculated through backpropogation.
 	 * 
@@ -422,15 +432,6 @@ public class NeuralNetwork {
 	}
 	
 	/**
-	 * Updates this neural network's array of weights.
-	 * 
-	 * @param weights The new array of weights for this neural network.
-	 */
-	public void setWeights(double[][][] weights) {
-		this.weights = weights;
-	}
-	
-	/**
 	 * View the weight matrices of this neural network in a human-readable 
 	 * format.
 	 */
@@ -455,15 +456,6 @@ public class NeuralNetwork {
 	 */
 	public double[][][] getBiases() {
 		return this.biases;
-	}
-	
-	/**
-	 * Updates this neural network's array of biases.
-	 * 
-	 * @param biases The new array of biases for this neural network.
-	 */
-	public void setBiases(double[][][] biases) {
-		this.biases = biases;
 	}
 	
 	/**

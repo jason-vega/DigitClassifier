@@ -1,13 +1,15 @@
 # Digit Classifier
-A scalable Java neural network featuring the stochastic gradient descent algorithm to recognize digits in the MNIST data set. The default neural network in *Train.java* has the following hyperparameters, which can be altered (as shown in the sections below):
+A scalable Java neural network featuring the stochastic gradient descent algorithm to recognize digits in the MNIST data set. The default neural network in *Train.java* has the following hyperparameters, most of which can be easily altered (as shown in the sections below):
 * Layers: 784-100-10
 * Mini-batch size: 10
-* Learning rate: 0.5
-* Epochs: 30
+* Learning rate: 0.1
+* Epochs: 60
 * Cost function: Cross-Entropy
 * Activation function: Sigmoid
+* Regularization: L2
+* Regularization parameter: 6
 
-The default neural network yielded a maximum test accuracy rate of 97.06% on the 27th epoch when trained and tested on the entire MNIST data set.
+The default neural network yielded a maximum test accuracy rate of 98.06% on the 53rd epoch when trained and tested on the entire MNIST data set.
 ## Prerequisites
 You will need to download the MNIST data set from [Yann LeCun's website](http://yann.lecun.com/exdb/mnist/index.html). Download all four files and save them into a directory of your choice. Next, you will need to uncompress each of these files. You can do this using the gzip command:
 ```
@@ -33,7 +35,7 @@ java Train
 ## Modifying Hyperparameters
 There are a number of hyperparameters you can change with relative ease. All hyperparameters are stored as constants at the top of the Train class in *Train.java*. For instance, to change the learning rate to 0.01, locate the following line:
 ```
-public static final double LEARNING_RATE = 0.1667;
+public static final double LEARNING_RATE = 0.1;
 ```
 and change it to
 ```
@@ -63,12 +65,12 @@ NeuralNetwork n = new NeuralNetwork(
 ```
 The NeuralNetwork constructor accepts an array of integers denoting the number of neurons in each layer, where the *i*th integer corresponds to the *i*th layer. If you have removed any of the layer constants, added new ones or renamed them, these changes must be reflected here. Following up with our example, we change these lines to the following:
 ```
-NeuralNetwork n = new NeuralNetwork(new int[]{
+NeuralNetwork n = new NeuralNetwork(
   INPUT_LAYER_SIZE,
   FIRST_HIDDEN_LAYER_SIZE,
   SECOND_HIDDEN_LAYER_SIZE,
   OUTPUT_LAYER_SIZE
-});
+);
 ```
 We have now added a second hidden layer of 30 neurons, while the first hidden layer's neurons have decreased to 75!
 ## Limiting the Number of Training/Test Images

@@ -9,10 +9,10 @@ public class Train {
 	public static final int FIRST_HIDDEN_LAYER_SIZE = 100;
 	public static final int OUTPUT_LAYER_SIZE = 10;
 	
-	public static final String TRAINING_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-images-idx3-ubyte";
-	public static final String TRAINING_LABEL_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\train-labels-idx1-ubyte";
-	public static final String TEST_IMAGE_FILE_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-images-idx3-ubyte";
-	public static final String TEST_IMAGE_LABEL_PATH = "C:\\Users\\Jason Vega\\Downloads\\t10k-labels-idx1-ubyte";
+	public static final String TRAINING_IMAGE_FILE_PATH = "";
+	public static final String TRAINING_LABEL_FILE_PATH = "";
+	public static final String TEST_IMAGE_FILE_PATH = "";
+	public static final String TEST_IMAGE_LABEL_PATH = "";
 	
 	public static final int IMAGE_FILE_OFFSET = 16;
 	public static final int LABEL_FILE_OFFSET = 8;
@@ -31,8 +31,9 @@ public class Train {
 	public static final int INPUT_DATA_COMPONENTS = 2;
 	
 	public static final int MINI_BATCH_SIZE = 10;
-	public static final double LEARNING_RATE = 0.5;
-	public static final int EPOCHS = 30;
+	public static final double LEARNING_RATE = 0.1;
+	public static final double REGULARIZATION = 6;
+	public static final int EPOCHS = 60;
 	
 	public static final boolean NORMALIZE_PIXEL_DATA = true;
 	public static final boolean NORMALIZE_LABEL_DATA = false;
@@ -94,9 +95,9 @@ public class Train {
 			testLabels
 		};
 		
-		net.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, EPOCHS, testData, 
-		TRAIN_VERBOSE, GET_TEST_ACCURACY_EACH_EPOCH, 
-		GET_TRAINING_ACCURACY_EACH_EPOCH, TEST_VERBOSE);
+		net.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, REGULARIZATION,
+			EPOCHS, testData, TRAIN_VERBOSE, GET_TEST_ACCURACY_EACH_EPOCH, 
+			GET_TRAINING_ACCURACY_EACH_EPOCH, TEST_VERBOSE);
 		
 		if (!GET_TEST_ACCURACY_EACH_EPOCH) {
 			double testAccuracy = net.getAccuracy(testData, 
