@@ -3,13 +3,13 @@ A scalable Java neural network featuring the stochastic gradient descent algorit
 * Layers: 784-100-10
 * Mini-batch size: 10
 * Learning rate: 0.1
-* Epochs: 60
+* Epochs: 30
 * Cost function: Cross-Entropy
 * Activation function: Sigmoid
 * Regularization: L2
 * Regularization parameter: 6
 
-The default neural network yielded a maximum test accuracy rate of 98.06% on the 53rd epoch when trained and tested on the entire MNIST data set.
+The default neural network yielded a maximum test accuracy rate of 98.16% on the 49th epoch when trained and tested on the entire MNIST data set.
 ## Prerequisites
 You will need to download the MNIST data set from [Yann LeCun's website](http://yann.lecun.com/exdb/mnist/index.html). Download all four files and save them into a directory of your choice. Next, you will need to uncompress each of these files. You can do this using the gzip command:
 ```

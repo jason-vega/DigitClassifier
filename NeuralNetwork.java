@@ -516,7 +516,8 @@ public class NeuralNetwork {
 				double row[] = new double[currentLayerNodes];
 				
 				for (int c = 0; c < currentLayerNodes; c++) {
-					row[c] = randomNumberGenerator.nextGaussian();
+					row[c] = randomNumberGenerator.nextGaussian() / 
+						Math.sqrt(currentLayerNodes);
 				}
 				
 				weightMatrix[n] = row;
