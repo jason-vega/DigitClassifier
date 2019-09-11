@@ -34,6 +34,7 @@ public class Train {
 	public static final double LEARNING_RATE = 0.1;
 	public static final double REGULARIZATION = 6;
 	public static final int EPOCHS = 60;
+	public static final double LEARNING_RATE_DECAY = 0.3;
 	
 	public static final boolean NORMALIZE_PIXEL_DATA = true;
 	public static final boolean NORMALIZE_LABEL_DATA = false;
@@ -96,8 +97,9 @@ public class Train {
 		};
 		
 		net.train(trainData, MINI_BATCH_SIZE, LEARNING_RATE, REGULARIZATION,
-			EPOCHS, testData, TRAIN_VERBOSE, GET_TEST_ACCURACY_EACH_EPOCH, 
-			GET_TRAINING_ACCURACY_EACH_EPOCH, TEST_VERBOSE);
+			EPOCHS, LEARNING_RATE_DECAY, testData, TRAIN_VERBOSE, 
+			GET_TEST_ACCURACY_EACH_EPOCH, GET_TRAINING_ACCURACY_EACH_EPOCH, 
+			TEST_VERBOSE);
 		
 		if (!GET_TEST_ACCURACY_EACH_EPOCH) {
 			double testAccuracy = net.getAccuracy(testData, 

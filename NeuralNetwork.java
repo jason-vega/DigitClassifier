@@ -56,10 +56,12 @@ public class NeuralNetwork {
 	 * 
 	 * @param trainingData The training data, including the input and 
 	 * corresponding labels.
+	 * @param miniBatchSize The (maximum) size of each mini-batch.
 	 * @param learningRate The learning rate for the optimization method.
 	 * @param regularization The regularization parameter for the optimization 
 	 * method.
 	 * @param epochs The number of training sessions.
+	 * @param learningRateDecay The decay rate for the learning rate schedule.
 	 * @param testData The test data, including the input and corresponding
 	 * labels.
 	 * @param trainVerbose Whether or not to output training processing 
@@ -72,10 +74,10 @@ public class NeuralNetwork {
 	 * @throws Exception 
 	 */
 	public void train(double[][][][] trainingData, int miniBatchSize, 
-			double learningRate, double regularization, int epochs, 
-			double[][][][] testData, boolean trainVerbose, 
-			boolean getTestAccuracy, boolean getTrainingAccuracy, 
-			boolean testVerbose) 
+			double learningRate, double regularization, int epochs,
+			double learningRateDecay, double[][][][] testData, 
+			boolean trainVerbose, boolean getTestAccuracy,
+			boolean getTrainingAccuracy, boolean testVerbose) 
 					throws Exception {
 		long initialTimeStart = System.nanoTime();
 		
@@ -92,8 +94,10 @@ public class NeuralNetwork {
 			for (int j = 0; j < miniBatches.length; j++) {
 				double[][][][] miniBatch = miniBatches[j];
 				
-				this.stochasticGradientDescent(miniBatch, learningRate, 
-						regularization, trainingData[0].length);
+				this.stochasticGradientDescent(miniBatch, 
+					this.learningSchedule(learningRate, (i - 1), 
+						learningRateDecay), regularization, 
+					trainingData[0].length);
 				
 				// Display progress bar
 				if (trainVerbose) {
@@ -211,6 +215,19 @@ public class NeuralNetwork {
 	}
 	
 	/**
+	 * Returns a learning rate in accordance to the learning schedule.
+	 * 
+	 * @param learningRate The initial learning rate.
+	 * @param iteration The current iteration.
+	 * @param decayRate The rate of decay for the learning schedule.
+	 * @return the resulting learning rate.
+	 */
+	public double learningSchedule(double learningRate, int iteration, 
+			double decayRate) {
+		return learningRate * 1 / (1 + decayRate * iteration);
+	}
+	
+	/**
 	 * Calculates and returns the accuracy (%) of this neural network.
 	 * 
 	 * @param dataSet The data to test for accuracy.
@@ -228,7 +245,7 @@ public class NeuralNetwork {
 		double[][][] labels = dataSet[1];
 		
 		for (int i = 0; i < images.length; i++) {
-			double[][] output = forwardPass(images[i]);
+			double[][] output = this.forwardPass(images[i]);
 			int resultIndex = Matrix.argmax(output);
 			
 			if (labels[i][resultIndex][0] == 1) {
